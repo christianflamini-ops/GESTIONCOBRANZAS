@@ -1,0 +1,519 @@
+<title>Honorarios</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EDEAE2;
+  --surface:#FFFFFF;
+  --surface-2:#F7F4EE;
+  --ink:#26241F;
+  --muted:#726C60;
+  --border:#DDD7C9;
+  --accent:#A85428;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#F2E2D5;
+  --good:#3F6B4F;
+  --bad:#A83A3A;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A1815;
+    --surface:#242119;
+    --surface-2:#2C2820;
+    --ink:#EDE8DD;
+    --muted:#A69C89;
+    --border:#3B362B;
+    --accent:#E08A54;
+    --accent-ink:#1A1815;
+    --accent-soft:#3A2A1E;
+    --good:#7FB894;
+    --bad:#D97C7C;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1A1815;
+  --surface:#242119;
+  --surface-2:#2C2820;
+  --ink:#EDE8DD;
+  --muted:#A69C89;
+  --border:#3B362B;
+  --accent:#E08A54;
+  --accent-ink:#1A1815;
+  --accent-soft:#3A2A1E;
+  --good:#7FB894;
+  --bad:#D97C7C;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:56px 20px 80px;
+}
+
+.sheet{
+  width:100%;
+  max-width:600px;
+}
+
+.masthead{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin-bottom:6px;
+}
+.masthead h1{
+  font-family:"Fraunces",Georgia,serif;
+  font-weight:600;
+  font-size:34px;
+  letter-spacing:-0.01em;
+  margin:0;
+  text-wrap:balance;
+}
+.masthead .tag{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  border:1px solid var(--border);
+  padding:4px 9px;
+  border-radius:100px;
+  white-space:nowrap;
+}
+.dek{
+  color:var(--muted);
+  font-size:14.5px;
+  margin:0 0 32px;
+  max-width:46ch;
+  line-height:1.5;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:26px 26px 22px;
+  margin-bottom:18px;
+}
+.card + .card{margin-top:18px;}
+
+.field-label{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  color:var(--muted);
+  display:block;
+  margin-bottom:8px;
+}
+.field{margin-bottom:20px;}
+.field:last-child{margin-bottom:0;}
+
+.two-col{
+  display:grid;
+  grid-template-columns:1.4fr 1fr;
+  gap:20px;
+}
+
+select, input[type=number], input[type=text]{
+  width:100%;
+  font-family:"IBM Plex Sans",sans-serif;
+  font-size:15.5px;
+  color:var(--ink);
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:11px 12px;
+  appearance:none;
+  -webkit-appearance:none;
+}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23726C60' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:32px;
+}
+input[type=number]{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;}
+select:focus, input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft);
+}
+
+/* ledger / receipt result */
+.ledger{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+}
+.ledger-head{
+  padding:18px 26px;
+  border-bottom:1px dashed var(--border);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  color:var(--muted);
+}
+.ledger-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding:12px 26px;
+  font-size:14.5px;
+  border-bottom:1px solid var(--border);
+}
+.ledger-row:last-of-type{border-bottom:none;}
+.ledger-row .k{color:var(--muted);}
+.ledger-row .v{
+  font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;
+}
+.ledger-row .v.adj-pos{color:var(--bad);}
+.ledger-row .v.adj-neg{color:var(--good);}
+
+.ledger-total{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:22px 26px;
+  background:var(--accent-soft);
+}
+.ledger-total .k{
+  font-family:"Fraunces",serif;
+  font-weight:500;
+  font-size:16px;
+}
+.ledger-total .v{
+  font-family:"Fraunces",serif;
+  font-weight:600;
+  font-size:32px;
+  color:var(--accent);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-0.01em;
+}
+
+/* settings disclosure */
+details.settings{
+  margin-top:22px;
+}
+details.settings summary{
+  cursor:pointer;
+  list-style:none;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12px;
+  letter-spacing:.04em;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:4px 2px;
+}
+details.settings summary::-webkit-details-marker{display:none;}
+details.settings summary::before{
+  content:"›";
+  display:inline-block;
+  transition:transform .15s ease;
+  font-size:15px;
+}
+details.settings[open] summary::before{transform:rotate(90deg);}
+details.settings summary:hover{color:var(--ink);}
+
+.settings-body{padding-top:18px;}
+.svc-row{
+  display:grid;
+  grid-template-columns:1fr 100px 32px;
+  gap:10px;
+  align-items:center;
+  margin-bottom:10px;
+}
+.svc-row input[type=text]{font-size:14px;padding:9px 10px;}
+.svc-row input[type=number]{font-size:14px;padding:9px 10px;text-align:right;}
+.icon-btn{
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  color:var(--bad);
+  border-radius:7px;
+  width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+}
+.icon-btn:hover{background:var(--accent-soft);}
+
+.add-row{
+  display:grid;
+  grid-template-columns:1fr 100px 32px;
+  gap:10px;
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+}
+.add-row input{font-size:14px;padding:9px 10px;}
+.add-btn{
+  border:1px solid var(--accent);
+  background:transparent;
+  color:var(--accent);
+  border-radius:7px;
+  width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  font-size:16px;
+}
+.add-btn:hover{background:var(--accent-soft);}
+
+.adj-grid{
+  display:grid;
+  grid-template-columns:1fr 80px;
+  gap:10px 14px;
+  align-items:center;
+}
+.adj-grid .k{font-size:13.5px;color:var(--muted);}
+.adj-grid input{font-size:14px;padding:9px 10px;text-align:right;}
+
+.note{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:14px;
+  line-height:1.5;
+}
+
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important;}
+}
+
+@media (max-width:480px){
+  .two-col{grid-template-columns:1fr;}
+  .masthead{flex-direction:column;align-items:flex-start;gap:8px;}
+}
+</style>
+
+<div class="sheet">
+  <div class="masthead">
+    <h1>Honorarios</h1>
+    <span class="tag" id="dateTag"></span>
+  </div>
+  <p class="dek">Cargá el servicio, las horas y la antigüedad del cliente. El precio se recalcula al instante.</p>
+
+  <div class="card">
+    <div class="field">
+      <span class="field-label">Servicio</span>
+      <select id="servicio"></select>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <span class="field-label">Antigüedad del cliente</span>
+        <select id="antiguedad">
+          <option value="nuevo">Nuevo — sin historial</option>
+          <option value="1">Menos de 1 año</option>
+          <option value="3" selected>1 a 3 años</option>
+          <option value="5">3 a 5 años</option>
+          <option value="10">Más de 5 años</option>
+        </select>
+      </div>
+      <div class="field">
+        <span class="field-label">Horas</span>
+        <input type="number" id="horas" min="0" step="0.5" value="5">
+      </div>
+    </div>
+  </div>
+
+  <div class="ledger">
+    <div class="ledger-head">Detalle</div>
+    <div class="ledger-row"><span class="k" id="row-servicio">Servicio</span><span class="v" id="row-tarifa">—</span></div>
+    <div class="ledger-row"><span class="k">Subtotal</span><span class="v" id="row-subtotal">—</span></div>
+    <div class="ledger-row"><span class="k" id="row-adjlabel">Ajuste por antigüedad</span><span class="v" id="row-adj">—</span></div>
+    <div class="ledger-total">
+      <span class="k">Honorario sugerido</span>
+      <span class="v" id="total">$0</span>
+    </div>
+  </div>
+
+  <details class="settings">
+    <summary>Editar tarifas y ajustes</summary>
+    <div class="settings-body">
+      <div class="card" style="margin-bottom:14px;">
+        <span class="field-label">Servicios y tarifa por hora</span>
+        <div id="serviciosParams"></div>
+        <div class="add-row">
+          <input type="text" id="newNombre" placeholder="Nuevo servicio">
+          <input type="number" id="newTarifa" placeholder="$/h">
+          <button class="add-btn" id="addServicio" title="Agregar" aria-label="Agregar servicio">+</button>
+        </div>
+      </div>
+      <div class="card">
+        <span class="field-label">Ajuste por antigüedad (%)</span>
+        <div class="adj-grid" id="adjGrid"></div>
+        <p class="note">Positivo suma al subtotal, negativo lo descuenta. Los cambios se guardan en este navegador.</p>
+      </div>
+    </div>
+  </details>
+</div>
+
+<script>
+const STORAGE_KEY = 'honorarios_config_v2';
+
+const defaultConfig = {
+  servicios: [
+    { nombre: 'Consultoría', tarifa: 8000 },
+    { nombre: 'Desarrollo / Programación', tarifa: 6000 },
+    { nombre: 'Diseño', tarifa: 5000 },
+    { nombre: 'Redacción / Contenidos', tarifa: 3500 },
+    { nombre: 'Soporte técnico', tarifa: 4000 },
+  ],
+  adj: { nuevo: 10, '1': 5, '3': 0, '5': -5, '10': -10 }
+};
+const adjLabels = { nuevo:'Nuevo — sin historial', '1':'Menos de 1 año', '3':'1 a 3 años', '5':'3 a 5 años', '10':'Más de 5 años' };
+
+function loadConfig(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return JSON.parse(JSON.stringify(defaultConfig));
+}
+function saveConfig(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); }
+
+let config = loadConfig();
+
+const servicioSel = document.getElementById('servicio');
+const antiguedadSel = document.getElementById('antiguedad');
+const horasInput = document.getElementById('horas');
+const totalEl = document.getElementById('total');
+const rowServicio = document.getElementById('row-servicio');
+const rowTarifa = document.getElementById('row-tarifa');
+const rowSubtotal = document.getElementById('row-subtotal');
+const rowAdjLabel = document.getElementById('row-adjlabel');
+const rowAdj = document.getElementById('row-adj');
+const serviciosParams = document.getElementById('serviciosParams');
+const adjGrid = document.getElementById('adjGrid');
+
+function fmt(n){
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + Math.round(Math.abs(n)).toLocaleString('es-AR');
+}
+
+function renderServicioOptions(){
+  const prev = servicioSel.value;
+  servicioSel.innerHTML = '';
+  config.servicios.forEach((s,i)=>{
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = s.nombre;
+    servicioSel.appendChild(opt);
+  });
+  if(prev !== '' && config.servicios[prev]) servicioSel.value = prev;
+}
+
+function renderServiciosParams(){
+  serviciosParams.innerHTML = '';
+  config.servicios.forEach((s,i)=>{
+    const row = document.createElement('div');
+    row.className = 'svc-row';
+    row.innerHTML = `
+      <input type="text" data-i="${i}" class="nombreInput" value="${s.nombre.replace(/"/g,'&quot;')}">
+      <input type="number" data-i="${i}" class="tarifaInput" value="${s.tarifa}">
+      <button class="icon-btn delServicio" data-i="${i}" title="Eliminar" aria-label="Eliminar servicio">✕</button>
+    `;
+    serviciosParams.appendChild(row);
+  });
+  serviciosParams.querySelectorAll('.nombreInput').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      config.servicios[e.target.dataset.i].nombre = e.target.value;
+      saveConfig(); renderServicioOptions(); calcular();
+    });
+  });
+  serviciosParams.querySelectorAll('.tarifaInput').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      config.servicios[e.target.dataset.i].tarifa = parseFloat(e.target.value)||0;
+      saveConfig(); calcular();
+    });
+  });
+  serviciosParams.querySelectorAll('.delServicio').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      config.servicios.splice(e.target.dataset.i,1);
+      saveConfig(); renderServicioOptions(); renderServiciosParams(); calcular();
+    });
+  });
+}
+
+function renderAdjGrid(){
+  adjGrid.innerHTML = '';
+  Object.keys(adjLabels).forEach(key=>{
+    const label = document.createElement('span');
+    label.className = 'k';
+    label.textContent = adjLabels[key];
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = config.adj[key];
+    input.dataset.key = key;
+    input.addEventListener('input', e=>{
+      config.adj[key] = parseFloat(e.target.value)||0;
+      saveConfig(); calcular();
+    });
+    adjGrid.appendChild(label);
+    adjGrid.appendChild(input);
+  });
+}
+
+document.getElementById('addServicio').addEventListener('click', ()=>{
+  const nombre = document.getElementById('newNombre').value.trim();
+  const tarifa = parseFloat(document.getElementById('newTarifa').value)||0;
+  if(!nombre) return;
+  config.servicios.push({nombre, tarifa});
+  saveConfig();
+  document.getElementById('newNombre').value = '';
+  document.getElementById('newTarifa').value = '';
+  renderServicioOptions(); renderServiciosParams(); calcular();
+});
+
+function calcular(){
+  const idx = servicioSel.value;
+  const servicio = config.servicios[idx];
+  if(!servicio){
+    totalEl.textContent = '$0';
+    rowTarifa.textContent = '—'; rowSubtotal.textContent='—'; rowAdj.textContent='—';
+    return;
+  }
+  const horas = parseFloat(horasInput.value)||0;
+  const antKey = antiguedadSel.value;
+  const pct = config.adj[antKey] || 0;
+
+  const subtotal = servicio.tarifa * horas;
+  const ajuste = subtotal * (pct/100);
+  const total = subtotal + ajuste;
+
+  rowServicio.textContent = servicio.nombre;
+  rowTarifa.textContent = fmt(servicio.tarifa) + ' /h × ' + horas + 'h';
+  rowSubtotal.textContent = fmt(subtotal);
+  rowAdjLabel.textContent = `Ajuste (${adjLabels[antKey]}, ${pct>0?'+':''}${pct}%)`;
+  rowAdj.textContent = (ajuste===0?'':(ajuste>0?'+':'')) + fmt(ajuste);
+  rowAdj.className = 'v' + (ajuste>0?' adj-pos':ajuste<0?' adj-neg':'');
+  totalEl.textContent = fmt(total);
+}
+
+[servicioSel, antiguedadSel, horasInput].forEach(el=>{
+  el.addEventListener('input', calcular);
+  el.addEventListener('change', calcular);
+});
+
+const hoy = new Date();
+document.getElementById('dateTag').textContent = hoy.toLocaleDateString('es-AR', {day:'2-digit', month:'short', year:'numeric'});
+
+renderServicioOptions();
+renderServiciosParams();
+renderAdjGrid();
+calcular();
+</script>
