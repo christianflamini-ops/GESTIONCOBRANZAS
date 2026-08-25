@@ -1,0 +1,1592 @@
+﻿<title>Gestión de Cobranzas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+
+<style>
+  :root {
+    --bg: #f2f4f3;
+    --surface: #ffffff;
+    --surface-sunken: #eaede9;
+    --text: #1b2420;
+    --text-muted: #5c6862;
+    --border: #dde2de;
+    --accent: #0f6e5c;
+    --accent-strong: #0a4d40;
+    --accent-tint: #e3f0ec;
+    --ok: #2e7d46;
+    --ok-tint: #e5f3e8;
+    --pending: #a3690a;
+    --pending-tint: #fbeed9;
+    --danger: #b3432f;
+    --shadow: 0 1px 2px rgba(20, 30, 25, 0.06), 0 6px 20px rgba(20, 30, 25, 0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181a;
+      --surface: #1c2124;
+      --surface-sunken: #22282b;
+      --text: #e9ede9;
+      --text-muted: #99a29c;
+      --border: #2c3336;
+      --accent: #3fa88c;
+      --accent-strong: #6fc6ac;
+      --accent-tint: #1c2f2a;
+      --ok: #5cb579;
+      --ok-tint: #1b2b1f;
+      --pending: #d9a24a;
+      --pending-tint: #2e2716;
+      --danger: #de7a64;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14181a;
+    --surface: #1c2124;
+    --surface-sunken: #22282b;
+    --text: #e9ede9;
+    --text-muted: #99a29c;
+    --border: #2c3336;
+    --accent: #3fa88c;
+    --accent-strong: #6fc6ac;
+    --accent-tint: #1c2f2a;
+    --ok: #5cb579;
+    --ok-tint: #1b2b1f;
+    --pending: #d9a24a;
+    --pending-tint: #2e2716;
+    --danger: #de7a64;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: auto; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .app {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header.top {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 30px;
+    margin: 4px 0 0;
+    text-wrap: balance;
+    letter-spacing: 0.01em;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    max-width: 60ch;
+    margin: 6px 0 0;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo-badge {
+    flex-shrink: 0;
+    width: 112px;
+    height: 112px;
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .logo-badge img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 8px;
+    max-width: 460px;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .stat .num {
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .stat .label {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-top: 1px;
+  }
+
+  .stat.ok .num { color: var(--ok); }
+  .stat.pending .num { color: var(--pending); }
+
+  .month-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .year-switch {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .year-switch button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 5px;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1;
+  }
+  .year-switch button:hover { background: var(--surface-sunken); }
+
+  .month-tabs {
+    display: flex;
+    gap: 3px;
+    background: var(--surface-sunken);
+    padding: 2px;
+    border-radius: 7px;
+    overflow-x: auto;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .month-tabs button {
+    position: relative;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+
+  .month-tabs button.active {
+    background: var(--surface);
+    color: var(--accent-strong);
+    box-shadow: var(--shadow);
+  }
+
+  .month-tabs button .dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .history {
+    margin: 4px 0 16px;
+    background: var(--surface-sunken);
+    border-radius: 9px;
+    padding: 12px 14px;
+  }
+
+  .history .h-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .history-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-row .h-amt { font-family: "IBM Plex Mono", monospace; }
+  .history-empty { font-size: 12.5px; color: var(--text-muted); }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 10px 0 12px;
+    flex-wrap: wrap;
+  }
+
+  .search {
+    flex: 1;
+    min-width: 160px;
+    position: relative;
+  }
+
+  .search input {
+    width: 100%;
+    padding: 7px 10px 7px 30px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12.5px;
+  }
+
+  .search input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .search::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    width: 11px;
+    height: 11px;
+    transform: translateY(-50%);
+    border: 1.4px solid var(--text-muted);
+    border-radius: 50%;
+    box-shadow: 4px 4px 0 -2.5px var(--text-muted);
+  }
+
+  .filters {
+    display: flex;
+    gap: 4px;
+    background: var(--surface-sunken);
+    padding: 2px;
+    border-radius: 7px;
+  }
+
+  .filters button {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 5px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .filters button.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+
+  .filters button:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+  }
+
+  .card-head .name {
+    font-weight: 600;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card-head .name span.email {
+    display: block;
+    font-weight: 400;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .badge.pending { background: var(--pending-tint); color: var(--pending); }
+  .badge.ok { background: var(--ok-tint); color: var(--ok); }
+  .badge.empty { background: var(--surface-sunken); color: var(--text-muted); }
+  .badge.medio { background: var(--accent-tint); color: var(--accent-strong); }
+
+  .chev {
+    color: var(--text-muted);
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+  .card.open .chev { transform: rotate(90deg); }
+
+  .card-body {
+    display: none;
+    padding: 4px 16px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .card.open .card-body { display: block; }
+
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 14px 0 6px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 14px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 10px 0 14px;
+    cursor: pointer;
+    line-height: 1.4;
+  }
+
+  .checkbox-row input {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .estado-row {
+    display: flex;
+    gap: 8px;
+    margin: 4px 0 16px;
+  }
+
+  .estado-btn {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .estado-btn.active[data-v="Pendiente"] { background: var(--pending-tint); color: var(--pending); border-color: transparent; }
+  .estado-btn.active[data-v="Enviado"] { background: var(--ok-tint); color: var(--ok); border-color: transparent; }
+
+  .preview {
+    background: var(--surface-sunken);
+    border-radius: 9px;
+    padding: 14px;
+  }
+
+  .preview .subj {
+    font-weight: 600;
+    font-size: 13.5px;
+    margin-bottom: 8px;
+  }
+
+  .preview .subj .lbl, .preview .body .lbl {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+
+  .preview textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 190px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .preview.disabled {
+    color: var(--text-muted);
+    font-size: 13.5px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .attach-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .attach-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px;
+    border: 1px dashed var(--border);
+    border-radius: 9px;
+    background: var(--surface);
+  }
+
+  .attach-row.attach-empty {
+    background: transparent;
+  }
+
+  .attach-thumb {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .attach-thumb-doc {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-sunken);
+    color: var(--accent-strong);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .attach-info { flex: 1; min-width: 0; }
+
+  .attach-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .attach-hint {
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .btn {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+
+  .btn:hover { background: var(--surface-sunken); }
+  .btn.primary:hover { background: var(--accent-strong); }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .email-field input {
+    font-family: inherit;
+  }
+
+  #changesCount {
+    display: inline-flex;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--pending-tint);
+    color: var(--pending);
+    font-size: 11px;
+    font-weight: 600;
+    align-items: center;
+    justify-content: center;
+  }
+  #changesCount:empty { display: none; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .panel h3 {
+    margin: 0 0 4px;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .panel p.hint {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0 0 14px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-grid .full { grid-column: 1 / -1; }
+
+  .form-grid label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+
+  .form-grid input, .form-grid select, .form-grid textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .form-grid textarea { resize: vertical; min-height: 70px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
+
+  .change-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+  .change-row:last-of-type { border-bottom: none; }
+  .change-row .btn { padding: 5px 10px; font-size: 12px; }
+
+  .empty-changes {
+    color: var(--text-muted);
+    font-size: 13.5px;
+  }
+
+  .export-panel {
+    margin-top: 22px;
+    margin-bottom: 0;
+  }
+
+  footer.note {
+    margin-top: 34px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand-row">
+      <div class="logo-badge"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCADOAM4DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooqOaXyY6AJKK+V/2uf+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" alt="Criado del Río & Asociados"></div>
+      <div>
+        <div class="eyebrow">Estudio Contable Criado del Río & Asociados</div>
+        <h1>GESTIÓN DE COBRANZAS</h1>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num" id="stat-total">–</div><div class="label">Clientes</div></div>
+      <div class="stat" id="stat-listo-card"><div class="num" id="stat-listo">–</div><div class="label">Con datos cargados</div></div>
+      <div class="stat pending"><div class="num" id="stat-pendiente">–</div><div class="label">Pendientes</div></div>
+      <div class="stat ok"><div class="num" id="stat-enviado">–</div><div class="label">Enviados</div></div>
+    </div>
+  </header>
+
+  <div class="month-bar">
+    <div class="year-switch">
+      <button id="yearPrev" aria-label="Año anterior">‹</button>
+      <span id="yearLabel">2026</span>
+      <button id="yearNext" aria-label="Año siguiente">›</button>
+    </div>
+    <div class="month-tabs" id="monthTabs"></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <input type="text" id="search" placeholder="Buscar cliente…" autocomplete="off">
+    </div>
+    <div class="filters" id="filters">
+      <button data-f="all" class="active">Todos</button>
+      <button data-f="falta">Sin cargar</button>
+      <button data-f="Pendiente">Pendientes</button>
+      <button data-f="Enviado">Enviados</button>
+    </div>
+    <div class="filters" id="medioFilters">
+      <button data-m="all" class="active">Correo + Whatsapp</button>
+      <button data-m="Correo">Solo correo</button>
+      <button data-m="Whatsapp">Solo Whatsapp</button>
+    </div>
+    <button class="btn" id="toggleAdd">+ Agregar cliente</button>
+    <button class="btn" id="toggleChanges">Cambios pendientes <span id="changesCount"></span></button>
+  </div>
+
+  <div id="addFormWrap"></div>
+  <div id="changesWrap"></div>
+
+  <div class="list" id="list"></div>
+
+  <div class="panel export-panel">
+    <h3>Reporte del mes</h3>
+    <p class="hint">Descarga un archivo CSV liviano con Cliente, Mes, Honorarios Mensuales, Deuda Acumulada Anterior y Honorarios Totales del mes seleccionado, para revisar los importes de un vistazo. Se abre directamente con Excel (doble clic).</p>
+    <button class="btn primary" id="exportBtn">Descargar reporte del mes</button>
+  </div>
+
+  <footer class="note">Los montos, estados y ediciones de texto se guardan en este navegador, separados por mes. Datos de clientes, cuentas bancarias y cierres tomados de la planilla COBRANZAS MENSUALES.xlsx.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CLIENTES = [
+  {cliente:"ABERTURAS MARTIN", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"ALGOBERRO GERARDO", medio:"Correo", email:"gerardoalgoberro77@gmail.com, ferdoba@gmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"NO", comentario:"Solo precisaríamos confirmar si los mismos serán abonados en efectivo o transferidos a los fines de emitir las facturas correspondientes.", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"ALL SERVICE", medio:"Correo", email:"gerardoalgoberro77@gmail.com, ferdoba@gmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"ANTONELLA (REF LEONARDO)", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"BAÑOS PABLO Y BAÑOS PADRE", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"BARRETO CLAUDIO (PLACERES ENVASADOS)", medio:"Whatsapp", email:"", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"BERARDO SAS", medio:"Correo", email:"administracion@berardost.com.ar, gberardo@berardost.com.ar", cuenta:"Banco Galicia\nTitular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"BIANCHI MARIA CLAUDIA (MADRE ANTONELLA)", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CANARIO", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CAPDEVILA MATIAS", medio:"Correo", email:"matias.capdevila@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CARRANZA ELENA", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CARRANZA MARCELA", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CARRARA GERMAN LUIS", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CONSORCIO FLORIANOPOLIS", medio:"Correo", email:"copiarvis@yahoo.com.ar", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CONY FUREY", medio:"Whatsapp", email:"", cuenta:"ALIAS: christian.flamini.mp\nCVU: 0000003100022129217457\nNOMBRE: CHRISTIAN IVAN FLAMINI", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CORDOBA JUAN", medio:"Correo", email:"juancebea@gmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CORTEX", medio:"Whatsapp", email:"", cuenta:"", factura:"", comentario:"", cierre:""},
+  {cliente:"CRAVERO GASTON (PRIMO)", medio:"Correo", email:"gcravero06@hotmail.com", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CRAVERO LEONARDO", medio:"Correo", email:"leo.cravero@hotmail.com", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CUR y CAUSSA LUCAS", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"DESENCHUFADOS", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"DIAZ ALEJANDRO (ODONTÓLOGO)", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"ECSDEV SAS", medio:"Correo", email:"l.pedrazzi@ec-systems.de", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"ENRICO HAYDEE (LINGUA MATIAS)", medio:"Correo", email:"matiaslingua@gmail.com, matiaslingua@unc.edu.ar", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"FERNANDEZ DIEGO", medio:"Correo", email:"dierocba@gmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"FUNDER", medio:"Correo", email:"kmonaco@kumelenescuela.edu.ar", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"GOL ZONE SAS", medio:"Correo", email:"germanpiazza@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"INCAST", medio:"Correo", email:"", cuenta:"", factura:"", comentario:"", cierre:""},
+  {cliente:"INMACULADA", medio:"Correo", email:"", cuenta:"", factura:"", comentario:"", cierre:""},
+  {cliente:"JASKOWSKY CECILIA", medio:"Correo", email:"cecijako@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MARTELLI AGROSER", medio:"Correo", email:"bruno@martellicba.com.ar, brunomartelli25@gmail.com", cuenta:"Banco Galicia\nTitular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MARTIN ENRIQUE Y CEBALLOS MIRIAM", medio:"Correo", email:"martinjoseenrique@hotmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MATIAS YELICICH", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MATICLAR SAS", medio:"Correo", email:"maticlar.sas@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"Solo precisaríamos confirmar si los mismos serán abonados en efectivo o transferidos a los fines de emitir las facturas correspondientes.", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MONTIVERO, FARRAN Y OVANDO", medio:"Correo", email:"montivero.daniel.e@gmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MOYANO PAULA", medio:"Correo", email:"pulanoyano@gmail.com", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MXP S.R.L.", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"NET LOG", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"OBERTO TATO", medio:"Whatsapp", email:"", cuenta:"CHEQUE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"PIAZZA RAUL (PADRE)", medio:"Correo", email:"piazzaraul@gmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"PILAR Y EMANUEL", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"POLIMANDI IRENE - PETRAZZINI RICARDO", medio:"Correo", email:"mipolimandi@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"REISCHENBACHER MATTHIAS", medio:"Correo", email:"m.reischenbacher@ec-systems.de", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"SEVERINI", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:""},
+  {cliente:"SI", medio:"Whatsapp", email:"", cuenta:"", factura:"", comentario:"", cierre:""},
+  {cliente:"TM MILC SAS", medio:"Correo", email:"tabladamotos@outlook.com, carolina_camino_1@hotmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"VAZQUEZ MARCELINO", medio:"Correo", email:"marceovazquez1960@gmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"VETTORAZZI SAS", medio:"Correo", email:"maxivetto@gmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"VIVIANA", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:""}
+];
+
+const STORE_KEY = "cobranzas_estudio_flamini_v2";
+const CUSTOM_KEY = "cobranzas_estudio_flamini_clientes_nuevos_v1";
+const EMAIL_KEY = "cobranzas_estudio_flamini_emails_v1";
+const IMAGES_KEY = "cobranzas_estudio_flamini_imagenes_v1";
+const MESES = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveState(state) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+function loadCustomClientes() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_KEY)) || []; }
+  catch (e) { return []; }
+}
+function saveCustomClientes(list) {
+  localStorage.setItem(CUSTOM_KEY, JSON.stringify(list));
+}
+function loadEmails() {
+  try { return JSON.parse(localStorage.getItem(EMAIL_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveEmails(e) {
+  localStorage.setItem(EMAIL_KEY, JSON.stringify(e));
+}
+function loadImages() {
+  try { return JSON.parse(localStorage.getItem(IMAGES_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveImages(imgs) {
+  try { localStorage.setItem(IMAGES_KEY, JSON.stringify(imgs)); }
+  catch (e) { toast("No se pudo guardar el documento (espacio insuficiente en el navegador).", true); }
+}
+function attachmentKey(cliente) { return cliente + "|" + activeMonthKey(); }
+
+let state = loadState();
+let customClientes = loadCustomClientes();
+let emailOverrides = loadEmails();
+let imageAttachments = loadImages();
+let openCard = null;
+let activeFilter = "all";
+let activeMedio = "all";
+let searchTerm = "";
+let showAddForm = false;
+let showChanges = false;
+
+const today = new Date();
+let activeYear = today.getFullYear();
+let activeMonthNum = today.getMonth() + 1;
+function pad2(n) { return String(n).padStart(2, "0"); }
+function activeMonthKey() { return `${activeYear}-${pad2(activeMonthNum)}`; }
+function monthKeyDisplay(mk) { const [y, m] = mk.split("-"); return `${m}/${y}`; }
+
+function allClientes() {
+  return CLIENTES.concat(customClientes);
+}
+
+function effectiveEmail(c) {
+  return emailOverrides[c.cliente] || c.email;
+}
+
+function pendingChanges() {
+  const emailUpdates = [];
+  CLIENTES.forEach(c => {
+    const ov = emailOverrides[c.cliente];
+    if (ov && ov !== c.email) emailUpdates.push({cliente: c.cliente, email: ov});
+  });
+  return {emailUpdates, nuevos: customClientes};
+}
+
+function pendingChangesText() {
+  const {emailUpdates, nuevos} = pendingChanges();
+  if (!emailUpdates.length && !nuevos.length) return "";
+  let out = "CAMBIOS PARA CARGAR EN LA PLANILLA COBRANZAS MENSUALES.xlsx\n";
+  if (emailUpdates.length) {
+    out += "\nEMAILS A ACTUALIZAR:\n";
+    emailUpdates.forEach(u => { out += `- ${u.cliente}: ${u.email}\n`; });
+  }
+  if (nuevos.length) {
+    out += "\nCLIENTES NUEVOS:\n";
+    nuevos.forEach(c => {
+      out += `- Cliente: ${c.cliente}\n`;
+      out += `  Medio: ${c.medio || "-"}\n`;
+      out += `  Email: ${c.email || "-"}\n`;
+      out += `  Cuenta bancaria: ${(c.cuenta || "-").replace(/\n/g, " / ")}\n`;
+      out += `  Se adjunta factura: ${c.factura || "-"}\n`;
+      out += `  Comentario: ${c.comentario || "-"}\n`;
+      out += `  Cierre de correo: ${c.cierre || "-"}\n\n`;
+    });
+  }
+  return out.trim();
+}
+
+function money(n) {
+  const num = parseFloat(n);
+  if (isNaN(num)) return "";
+  return num.toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function buildSubject(c, rec) {
+  if (!rec.monto) return "";
+  return `HONORARIOS ESTUDIO CDRA ${monthKeyDisplay(activeMonthKey())} - ${c.cliente}`.toUpperCase();
+}
+
+function buildBodyTemplate(c, rec) {
+  if (!rec.monto) return "";
+  const deuda = parseFloat(rec.deuda) || 0;
+  const total = parseFloat(rec.monto) + deuda;
+  let body = `Estimado/a, buenos días!\n\n`;
+  body += `Nos dirigimos a usted a fin de informarle que los honorarios mensuales correspondientes a ${monthKeyDisplay(activeMonthKey())} ascienden a $${money(rec.monto)}.`;
+  if (rec.ajustado) {
+    body += `\n\nLos mismos llevan el ajuste trimestral por inflación acordado, según lo informado por INDEC.`;
+  }
+  if (deuda > 0) {
+    body += `\n\nAsimismo, se registra una deuda acumulada anterior de $${money(deuda)}.`;
+    body += `\n\nEl monto total a abonar es de $${money(total)}.`;
+  }
+  if (c.comentario) body += `\n\n${c.comentario}`;
+  body += `\n\nLos datos para la transferencia son los siguientes:\n${c.cuenta || "(sin datos de cuenta cargados)"}`;
+  if (c.factura === "SI") body += `\n\nSe adjunta la factura correspondiente.`;
+  body += `\n\n${c.cierre}`;
+  return body;
+}
+
+function monthState() {
+  const mk = activeMonthKey();
+  if (!state[mk]) state[mk] = {};
+  return state[mk];
+}
+function getRec(name) {
+  return monthState()[name] || {monto:"", deuda:"", ajustado:false, estado:"", body:"", bodyKey:""};
+}
+function setRec(name, patch) {
+  const ms = monthState();
+  ms[name] = Object.assign(getRec(name), patch);
+  saveState(state);
+}
+
+function clientHistory(cliente) {
+  const rows = [];
+  const currentMk = activeMonthKey();
+  Object.keys(state).forEach(mk => {
+    if (mk === currentMk) return;
+    const rec = state[mk] && state[mk][cliente];
+    if (rec && rec.monto) rows.push({mk, monto: rec.monto, deuda: rec.deuda, estado: rec.estado});
+  });
+  rows.sort((a, b) => b.mk.localeCompare(a.mk));
+  return rows.slice(0, 6);
+}
+
+function matchesFilter(c, rec) {
+  if (activeFilter === "falta") return !rec.monto;
+  if (activeFilter === "Pendiente") return rec.monto && rec.estado !== "Enviado";
+  if (activeFilter === "Enviado") return rec.estado === "Enviado";
+  return true;
+}
+
+function render() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  const term = searchTerm.trim().toLowerCase();
+  const ALL = allClientes();
+
+  let total = ALL.length, listo = 0, pendiente = 0, enviado = 0;
+
+  ALL.forEach(c => {
+    const rec = getRec(c.cliente);
+    const hasData = !!rec.monto;
+    if (hasData) listo++;
+    if (hasData && rec.estado === "Enviado") enviado++;
+    else if (hasData) pendiente++;
+
+    if (term && !c.cliente.toLowerCase().includes(term)) return;
+    if (!matchesFilter(c, rec)) return;
+    if (activeMedio !== "all" && !(c.medio || "").toLowerCase().startsWith(activeMedio.toLowerCase())) return;
+
+    const card = document.createElement("div");
+    card.className = "card" + (openCard === c.cliente ? " open" : "");
+
+    const badge = !hasData
+      ? `<span class="badge empty">Sin cargar</span>`
+      : rec.estado === "Enviado"
+        ? `<span class="badge ok">Enviado</span>`
+        : `<span class="badge pending">Pendiente</span>`;
+
+    const head = document.createElement("div");
+    head.className = "card-head";
+    const medioLabel = c.medio && c.medio.trim().toLowerCase().startsWith("correo") ? "" : `<span class="badge medio">${c.medio || "?"}</span>`;
+    const newLabel = c.custom ? `<span class="badge medio">Nuevo</span>` : "";
+    const shownEmail = effectiveEmail(c);
+    head.innerHTML = `
+      <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+      <div class="name">${c.cliente}<span class="email">${shownEmail || "sin email cargado"}</span></div>
+      ${newLabel}
+      ${medioLabel}
+      ${badge}
+    `;
+    head.addEventListener("click", () => {
+      openCard = openCard === c.cliente ? null : c.cliente;
+      render();
+    });
+    card.appendChild(head);
+
+    if (openCard === c.cliente) {
+      const body = document.createElement("div");
+      body.className = "card-body";
+
+      const hist = clientHistory(c.cliente);
+      const histHtml = hist.length
+        ? hist.map(h => {
+            const t = parseFloat(h.monto) + (parseFloat(h.deuda) || 0);
+            const deudaNote = h.deuda ? ` (incl. deuda $${money(h.deuda)})` : "";
+            return `<div class="history-row"><span>${monthKeyDisplay(h.mk)}${h.estado ? " · " + h.estado : ""}</span><span class="h-amt">$${money(t)}${deudaNote}</span></div>`;
+          }).join("")
+        : `<div class="history-empty">Sin datos cargados en otros meses.</div>`;
+
+      body.innerHTML = `
+        <div class="fields">
+          <div class="field">
+            <label for="monto-${cssId(c.cliente)}">Honorarios ($) — ${monthKeyDisplay(activeMonthKey())}</label>
+            <input type="number" inputmode="decimal" step="0.01" id="monto-${cssId(c.cliente)}" placeholder="0.00" value="${escapeAttr(rec.monto)}">
+          </div>
+          <div class="field">
+            <label for="deuda-${cssId(c.cliente)}">Deuda acumulada anterior ($)</label>
+            <input type="number" inputmode="decimal" step="0.01" id="deuda-${cssId(c.cliente)}" placeholder="0.00 (opcional)" value="${escapeAttr(rec.deuda)}">
+          </div>
+        </div>
+        <label class="checkbox-row" for="ajustado-${cssId(c.cliente)}">
+          <input type="checkbox" id="ajustado-${cssId(c.cliente)}" ${rec.ajustado ? "checked" : ""}>
+          Los honorarios se actualizaron (ajuste trimestral por inflación, INDEC)
+        </label>
+        <div class="history">
+          <div class="h-title">Meses anteriores</div>
+          ${histHtml}
+        </div>
+        <div class="estado-row">
+          <button class="estado-btn" data-v="Pendiente">Pendiente</button>
+          <button class="estado-btn" data-v="Enviado">Enviado</button>
+        </div>
+        ${!c.email ? `
+        <div class="field email-field">
+          <label for="email-${cssId(c.cliente)}">Email del cliente (${(c.medio || "").toLowerCase().startsWith("whatsapp") ? "opcional" : "falta en la planilla"})</label>
+          <input type="email" id="email-${cssId(c.cliente)}" placeholder="nombre@ejemplo.com" value="${escapeAttr(emailOverrides[c.cliente] || "")}">
+        </div>` : ''}
+        <div class="preview-slot"></div>
+      `;
+
+      const montoInput = body.querySelector(`#monto-${cssId(c.cliente)}`);
+      montoInput.addEventListener("input", () => { setRec(c.cliente, {monto: montoInput.value}); renderPreviewSlot(); updateStatsOnly(); renderMonthTabs(); });
+
+      const deudaInput = body.querySelector(`#deuda-${cssId(c.cliente)}`);
+      deudaInput.addEventListener("input", () => { setRec(c.cliente, {deuda: deudaInput.value}); renderPreviewSlot(); });
+
+      const ajustadoInput = body.querySelector(`#ajustado-${cssId(c.cliente)}`);
+      ajustadoInput.addEventListener("change", () => { setRec(c.cliente, {ajustado: ajustadoInput.checked}); renderPreviewSlot(); });
+
+      const emailInput = body.querySelector(`#email-${cssId(c.cliente)}`);
+      if (emailInput) {
+        emailInput.addEventListener("input", () => {
+          emailOverrides[c.cliente] = emailInput.value;
+          saveEmails(emailOverrides);
+          const emailSpan = head.querySelector(".email");
+          if (emailSpan) emailSpan.textContent = emailInput.value || "sin email cargado";
+          updateChangesBtn();
+        });
+      }
+
+      body.querySelectorAll(".estado-btn").forEach(btn => {
+        if (rec.estado === btn.dataset.v) btn.classList.add("active");
+        btn.addEventListener("click", () => {
+          const newVal = rec.estado === btn.dataset.v ? "" : btn.dataset.v;
+          setRec(c.cliente, {estado: newVal});
+          render();
+        });
+      });
+
+      function renderPreviewSlot() {
+        const rec2 = getRec(c.cliente);
+        const slot = body.querySelector(".preview-slot");
+        const s = buildSubject(c, rec2);
+        if (!s) {
+          slot.innerHTML = `<div class="preview disabled">Cargá el monto de honorarios para generar el correo.</div>`;
+          return;
+        }
+        const esCorreo = (c.medio || "").trim().toLowerCase().startsWith("correo");
+        const emailParaCopiar = effectiveEmail(c);
+        const key = activeMonthKey() + "|" + rec2.monto + "|" + rec2.deuda + "|" + (rec2.ajustado ? "1" : "0");
+        let bodyText;
+        if (rec2.body && rec2.bodyKey === key) {
+          bodyText = rec2.body;
+        } else {
+          bodyText = buildBodyTemplate(c, rec2);
+          setRec(c.cliente, {body: bodyText, bodyKey: key});
+        }
+        const imgKey = attachmentKey(c.cliente);
+        const img = imageAttachments[imgKey];
+        const isImg = img && img.type && img.type.startsWith("image/");
+        const thumbHtml = img
+          ? (isImg
+              ? `<img src="${img.dataUrl}" alt="${escapeAttr(img.name)}" class="attach-thumb">`
+              : `<div class="attach-thumb attach-thumb-doc">PDF</div>`)
+          : "";
+        const attachHtml = img
+          ? `<div class="attach-row">
+               ${thumbHtml}
+               <div class="attach-info">
+                 <div class="attach-name">${escapeHtml(img.name)}</div>
+                 <div class="attach-hint">Adjuntá este documento manualmente al enviar el correo — el texto copiado no incluye archivos.</div>
+               </div>
+               <button class="btn" data-remove-img>Quitar</button>
+             </div>`
+          : `<div class="attach-row attach-empty">
+               <label class="btn" for="img-${cssId(c.cliente)}">📎 Adjuntar documento</label>
+               <span class="attach-hint">Opcional — para acompañar el correo (ej: comprobante, factura).</span>
+             </div>`;
+
+        slot.innerHTML = `
+          <div class="preview">
+            <div class="subj"><span class="lbl">Asunto</span>${s}</div>
+            <div class="body">
+              <span class="lbl">Cuerpo (editable)</span>
+              <textarea rows="10">${escapeHtml(bodyText)}</textarea>
+            </div>
+            <input type="file" accept="image/*,application/pdf" id="img-${cssId(c.cliente)}" class="attach-input">
+            ${attachHtml}
+            <div class="actions">
+              ${esCorreo && emailParaCopiar ? '<button class="btn primary" data-copy="email">Copiar correo</button>' : ''}
+              <button class="btn primary" data-copy="subj">Copiar asunto</button>
+              <button class="btn primary" data-copy="body">Copiar cuerpo</button>
+              <button class="btn" data-restore>Restaurar texto generado</button>
+            </div>
+          </div>
+        `;
+        const ta = slot.querySelector("textarea");
+        ta.addEventListener("input", () => {
+          setRec(c.cliente, {body: ta.value, bodyKey: key});
+        });
+        const copyEmailBtn = slot.querySelector('[data-copy="email"]');
+        if (copyEmailBtn) {
+          copyEmailBtn.addEventListener("click", () => copyText(emailParaCopiar, "Correo copiado"));
+        }
+        slot.querySelector('[data-copy="subj"]').addEventListener("click", () => copyText(s, "Asunto copiado"));
+        slot.querySelector('[data-copy="body"]').addEventListener("click", () => {
+          copyText(ta.value, "Cuerpo copiado", ta);
+        });
+        slot.querySelector('[data-restore]').addEventListener("click", () => {
+          const fresh = buildBodyTemplate(c, getRec(c.cliente));
+          setRec(c.cliente, {body: fresh, bodyKey: key});
+          renderPreviewSlot();
+        });
+        const imgInput = slot.querySelector(`#img-${cssId(c.cliente)}`);
+        imgInput.addEventListener("change", () => {
+          const file = imgInput.files && imgInput.files[0];
+          if (!file) return;
+          const isValidType = file.type.startsWith("image/") || file.type === "application/pdf";
+          if (!isValidType) { toast("Elegí una imagen o un PDF.", true); return; }
+          if (file.size > 4 * 1024 * 1024) { toast("El documento es muy pesado (máx. 4 MB).", true); return; }
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              imageAttachments[imgKey] = {name: file.name, type: file.type, dataUrl: reader.result};
+              saveImages(imageAttachments);
+              renderPreviewSlot();
+            } catch (e) {
+              toast("No se pudo guardar el documento (espacio insuficiente en el navegador).", true);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+        const removeImgBtn = slot.querySelector('[data-remove-img]');
+        if (removeImgBtn) {
+          removeImgBtn.addEventListener("click", () => {
+            delete imageAttachments[imgKey];
+            saveImages(imageAttachments);
+            renderPreviewSlot();
+          });
+        }
+      }
+      renderPreviewSlot();
+
+      card.appendChild(body);
+    }
+
+    list.appendChild(card);
+  });
+
+  if (!list.children.length) {
+    list.innerHTML = `<div class="preview disabled" style="background:transparent;">No hay clientes que coincidan con el filtro.</div>`;
+  }
+
+  document.getElementById("stat-total").textContent = total;
+  document.getElementById("stat-listo").textContent = listo;
+  document.getElementById("stat-pendiente").textContent = pendiente;
+  document.getElementById("stat-enviado").textContent = enviado;
+}
+
+function updateStatsOnly() {
+  let listo = 0, pendiente = 0, enviado = 0;
+  allClientes().forEach(c => {
+    const rec = getRec(c.cliente);
+    const hasData = !!rec.monto;
+    if (hasData) listo++;
+    if (hasData && rec.estado === "Enviado") enviado++;
+    else if (hasData) pendiente++;
+  });
+  document.getElementById("stat-listo").textContent = listo;
+  document.getElementById("stat-pendiente").textContent = pendiente;
+  document.getElementById("stat-enviado").textContent = enviado;
+
+  // refresh badge on the (possibly collapsed) head of the open card without full re-render jank
+}
+
+function cssId(s) { return s.replace(/[^a-zA-Z0-9]/g, "_"); }
+function escapeAttr(s) { return (s || "").replace(/"/g, "&quot;"); }
+function escapeHtml(s) {
+  return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+let toastTimer = null;
+function toast(msg, bad) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.background = bad ? "var(--danger)" : "var(--text)";
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), bad ? 3200 : 1800);
+}
+
+function copyText(text, msg, fallbackEl) {
+  const done = () => toast(msg);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => {
+      if (fallbackEl) { fallbackEl.focus(); fallbackEl.select(); }
+      done();
+    });
+  } else if (fallbackEl) {
+    fallbackEl.focus();
+    fallbackEl.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    done();
+  }
+}
+
+document.getElementById("search").addEventListener("input", (e) => {
+  searchTerm = e.target.value;
+  render();
+});
+
+document.getElementById("filters").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-f]");
+  if (!btn) return;
+  activeFilter = btn.dataset.f;
+  document.querySelectorAll("#filters button").forEach(b => b.classList.toggle("active", b === btn));
+  render();
+});
+
+document.getElementById("medioFilters").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-m]");
+  if (!btn) return;
+  activeMedio = btn.dataset.m;
+  document.querySelectorAll("#medioFilters button").forEach(b => b.classList.toggle("active", b === btn));
+  render();
+});
+
+function renderMonthTabs() {
+  document.getElementById("yearLabel").textContent = activeYear;
+  const tabs = document.getElementById("monthTabs");
+  tabs.innerHTML = MESES.map((label, i) => {
+    const num = i + 1;
+    const mk = `${activeYear}-${pad2(num)}`;
+    const hasData = !!(state[mk] && Object.keys(state[mk]).some(cli => state[mk][cli] && state[mk][cli].monto));
+    const isActive = num === activeMonthNum;
+    return `<button data-month="${num}" class="${isActive ? "active" : ""}">${label}${hasData ? '<span class="dot"></span>' : ''}</button>`;
+  }).join("");
+  tabs.querySelectorAll("button[data-month]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeMonthNum = parseInt(btn.dataset.month, 10);
+      openCard = null;
+      renderMonthTabs();
+      render();
+    });
+  });
+}
+
+document.getElementById("yearPrev").addEventListener("click", () => { activeYear--; openCard = null; renderMonthTabs(); render(); });
+document.getElementById("yearNext").addEventListener("click", () => { activeYear++; openCard = null; renderMonthTabs(); render(); });
+
+function renderAddForm() {
+  const wrap = document.getElementById("addFormWrap");
+  if (!showAddForm) { wrap.innerHTML = ""; return; }
+  wrap.innerHTML = `
+    <div class="panel">
+      <h3>Agregar cliente nuevo</h3>
+      <p class="hint">Se suma a la lista de acá. Para que quede también en la planilla, copiá el resumen desde "Cambios pendientes" y pasáselo a Claude.</p>
+      <div class="form-grid">
+        <div class="full">
+          <label for="nc-nombre">Nombre del cliente *</label>
+          <input type="text" id="nc-nombre" placeholder="Ej: Fernández Sociedad SRL">
+        </div>
+        <div>
+          <label for="nc-medio">Medio</label>
+          <select id="nc-medio">
+            <option value="Correo">Correo</option>
+            <option value="Whatsapp">Whatsapp</option>
+          </select>
+        </div>
+        <div>
+          <label for="nc-email" id="nc-email-label">Email</label>
+          <input type="email" id="nc-email" placeholder="nombre@ejemplo.com">
+        </div>
+        <div>
+          <label for="nc-factura">¿Se adjunta factura?</label>
+          <select id="nc-factura">
+            <option value="NO">NO</option>
+            <option value="SI">SI</option>
+          </select>
+        </div>
+        <div>
+          <label for="nc-comentario">Comentario (opcional)</label>
+          <input type="text" id="nc-comentario" placeholder="Opcional">
+        </div>
+        <div class="full">
+          <label for="nc-cuenta">Cuenta bancaria</label>
+          <textarea id="nc-cuenta" placeholder="Banco, CBU, alias, titular..."></textarea>
+        </div>
+        <div class="full">
+          <label for="nc-cierre">Cierre de correo</label>
+          <input type="text" id="nc-cierre" value="Ante cualquier consulta, quedamos a disposición. Saludos!">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="nc-submit">Agregar cliente</button>
+        <button class="btn" id="nc-cancel">Cancelar</button>
+      </div>
+    </div>
+  `;
+  const ncMedio = document.getElementById("nc-medio");
+  const ncEmailLabel = document.getElementById("nc-email-label");
+  const ncEmailInput = document.getElementById("nc-email");
+  function syncEmailOptional() {
+    const isWhatsapp = ncMedio.value === "Whatsapp";
+    ncEmailLabel.textContent = isWhatsapp ? "Email (opcional)" : "Email";
+    ncEmailInput.placeholder = isWhatsapp ? "nombre@ejemplo.com (opcional)" : "nombre@ejemplo.com";
+  }
+  ncMedio.addEventListener("change", syncEmailOptional);
+  syncEmailOptional();
+
+  document.getElementById("nc-cancel").addEventListener("click", () => { showAddForm = false; renderAddForm(); });
+  document.getElementById("nc-submit").addEventListener("click", () => {
+    const nombre = document.getElementById("nc-nombre").value.trim();
+    if (!nombre) { document.getElementById("nc-nombre").focus(); return; }
+    const exists = allClientes().some(c => c.cliente.toLowerCase() === nombre.toLowerCase());
+    if (exists) { alert("Ya existe un cliente con ese nombre."); return; }
+    customClientes.push({
+      cliente: nombre.toUpperCase(),
+      medio: document.getElementById("nc-medio").value,
+      email: document.getElementById("nc-email").value.trim(),
+      cuenta: document.getElementById("nc-cuenta").value.trim(),
+      factura: document.getElementById("nc-factura").value,
+      comentario: document.getElementById("nc-comentario").value.trim(),
+      cierre: document.getElementById("nc-cierre").value.trim(),
+      custom: true
+    });
+    saveCustomClientes(customClientes);
+    showAddForm = false;
+    renderAddForm();
+    updateChangesBtn();
+    render();
+  });
+}
+
+function deleteCustomClient(name) {
+  customClientes = customClientes.filter(c => c.cliente !== name);
+  saveCustomClientes(customClientes);
+  Object.keys(state).forEach(mk => { if (state[mk]) delete state[mk][name]; });
+  saveState(state);
+  delete emailOverrides[name];
+  saveEmails(emailOverrides);
+  Object.keys(imageAttachments).forEach(k => { if (k.startsWith(name + "|")) delete imageAttachments[k]; });
+  saveImages(imageAttachments);
+  updateChangesBtn();
+  renderChangesPanel();
+  renderMonthTabs();
+  render();
+}
+
+function renderChangesPanel() {
+  const wrap = document.getElementById("changesWrap");
+  if (!showChanges) { wrap.innerHTML = ""; return; }
+  const {emailUpdates, nuevos} = pendingChanges();
+  const text = pendingChangesText();
+  let rows = "";
+  emailUpdates.forEach(u => {
+    rows += `<div class="change-row"><div>📧 <strong>${u.cliente}</strong> — nuevo email: ${escapeHtml(u.email)}</div></div>`;
+  });
+  nuevos.forEach(c => {
+    rows += `<div class="change-row"><div>🆕 <strong>${c.cliente}</strong> (${c.medio || "sin medio"})</div><button class="btn" data-del="${escapeAttr(c.cliente)}">Quitar</button></div>`;
+  });
+  wrap.innerHTML = `
+    <div class="panel">
+      <h3>Cambios pendientes para la planilla</h3>
+      <p class="hint">Esta página no puede escribir directamente en tu archivo Excel. Copiá este resumen y pasáselo a Claude en el chat para que lo cargue en COBRANZAS MENSUALES.xlsx.</p>
+      ${rows ? rows : '<p class="empty-changes">No hay cambios pendientes.</p>'}
+      ${text ? `
+        <div class="actions" style="margin-top:14px;">
+          <button class="btn primary" id="copyChanges">Copiar resumen</button>
+        </div>
+        <textarea readonly rows="6" style="width:100%; margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:12px; padding:10px; border-radius:7px; border:1px solid var(--border); background:var(--surface-sunken); color:var(--text);">${escapeHtml(text)}</textarea>
+      ` : ''}
+    </div>
+  `;
+  const copyBtn = document.getElementById("copyChanges");
+  if (copyBtn) copyBtn.addEventListener("click", () => copyText(text, "Resumen copiado", wrap.querySelector("textarea")));
+  wrap.querySelectorAll("[data-del]").forEach(b => {
+    b.addEventListener("click", () => deleteCustomClient(b.dataset.del));
+  });
+}
+
+function updateChangesBtn() {
+  const {emailUpdates, nuevos} = pendingChanges();
+  const n = emailUpdates.length + nuevos.length;
+  document.getElementById("changesCount").textContent = n ? n : "";
+}
+
+document.getElementById("toggleAdd").addEventListener("click", () => {
+  showAddForm = !showAddForm;
+  showChanges = false;
+  renderAddForm();
+  renderChangesPanel();
+});
+
+document.getElementById("toggleChanges").addEventListener("click", () => {
+  showChanges = !showChanges;
+  showAddForm = false;
+  renderChangesPanel();
+  renderAddForm();
+});
+
+function csvEscape(v) {
+  const s = (v === null || v === undefined) ? "" : String(v);
+  if (/[;"\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function buildReportRows() {
+  const headers = ["Clientes","Mes","Honorarios Mensuales","Deuda Acumulada Anterior","Honorarios Totales"];
+  const rows = [headers];
+  const mk = activeMonthKey();
+  allClientes().forEach(c => {
+    const rec = getRec(c.cliente);
+    const hasData = !!rec.monto;
+    const deuda = parseFloat(rec.deuda) || 0;
+    const total = hasData ? (parseFloat(rec.monto) + deuda) : "";
+    rows.push([
+      c.cliente,
+      hasData ? monthKeyDisplay(mk) : "",
+      hasData ? money(rec.monto) : "",
+      hasData && deuda ? money(deuda) : "",
+      hasData ? money(total) : ""
+    ]);
+  });
+  return rows;
+}
+
+function rowsToCsv(rows) {
+  return "﻿" + rows.map(r => r.map(csvEscape).join(";")).join("\r\n");
+}
+
+function downloadViaBrowser(filename, csv) {
+  const blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+async function exportMonthReport() {
+  const btn = document.getElementById("exportBtn");
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Preparando...";
+  try {
+    const rows = buildReportRows();
+    const csv = rowsToCsv(rows);
+    const mk = activeMonthKey();
+    const filename = `Reporte_Cobranzas_${mk}.csv`;
+
+    const hasClaudeHost = window.claude && window.claude.use;
+    if (!hasClaudeHost) {
+      // Fuera del visor de Artifacts (ej: GitHub Pages) — descarga directa del navegador
+      downloadViaBrowser(filename, csv);
+      toast("Reporte descargado");
+      return;
+    }
+
+    const downloads = await window.claude.use("downloads");
+    if (!downloads) {
+      // El visor no otorgó la capacidad de descargas — probamos igual con el navegador
+      try {
+        downloadViaBrowser(filename, csv);
+        toast("Reporte descargado");
+      } catch (e) {
+        toast("La descarga no está disponible en este visor.", true);
+      }
+      return;
+    }
+
+    async function trySave(name, data) {
+      return downloads.save({filename: name, data});
+    }
+
+    try {
+      await trySave(filename, csv);
+      toast("Reporte descargado");
+    } catch (err) {
+      if (err && err.code === "extension_not_enabled") {
+        try {
+          await trySave(`Reporte_Cobranzas_${mk}.txt`, csv);
+          toast("Reporte descargado como .txt (renombralo a .csv para abrirlo en Excel)");
+        } catch (err2) {
+          if (err2 && err2.code === "declined") return;
+          toast("No se pudo descargar: " + (err2 && err2.message ? err2.message : "error desconocido"), true);
+        }
+      } else if (err && err.code === "declined") {
+        // el usuario canceló, no mostramos error
+      } else {
+        toast("No se pudo descargar: " + (err && err.message ? err.message : "error desconocido"), true);
+      }
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+document.getElementById("exportBtn").addEventListener("click", exportMonthReport);
+
+updateChangesBtn();
+renderMonthTabs();
+render();
+</script>
