@@ -22,6 +22,7 @@
     --pending: #bf6a02;
     --pending-tint: #fdf1e0;
     --danger: #d70015;
+    --danger-tint: #fce8e8;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
   }
 
@@ -41,6 +42,7 @@
       --pending: #ff9f0a;
       --pending-tint: #2e2110;
       --danger: #ff453a;
+      --danger-tint: #3a1210;
       --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.45);
     }
   }
@@ -59,6 +61,7 @@
     --pending: #ff9f0a;
     --pending-tint: #2e2110;
     --danger: #ff453a;
+    --danger-tint: #3a1210;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.45);
   }
 
@@ -406,6 +409,27 @@
     box-shadow: var(--shadow);
   }
 
+  .icon-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .icon-filter-btn:hover { color: var(--text); }
+  .icon-filter-btn.active {
+    background: var(--danger-tint);
+    color: var(--danger);
+    border-color: transparent;
+  }
+
   .filters button:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 1px;
@@ -471,9 +495,10 @@
   .badge.ok { background: var(--ok-tint); color: var(--ok); }
   .badge.empty { background: var(--surface-sunken); color: var(--text-muted); }
   .badge.medio { background: var(--accent-tint); color: var(--accent-strong); }
+  .badge.whatsapp { background: var(--ok-tint); color: var(--ok); }
   .badge.factura {
-    background: var(--accent-tint);
-    color: var(--accent-strong);
+    background: var(--danger-tint);
+    color: var(--danger);
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -917,6 +942,9 @@
       <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <input type="text" id="search" placeholder="Buscar cliente…" autocomplete="off">
     </div>
+    <button class="icon-filter-btn" id="facturaFilterBtn" type="button" title="Mostrar solo clientes a facturar" aria-pressed="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+    </button>
     <div class="filters" id="filters">
       <button data-f="all" class="active">Todos</button>
       <button data-f="falta">Sin cargar</button>
@@ -1122,6 +1150,7 @@ let descriptions = loadDescriptions();
 let openCard = null;
 let activeFilter = "all";
 let activeMedio = "all";
+let activeFacturaOnly = false;
 let sortOrder = "az";
 let searchTerm = "";
 let showAddForm = false;
@@ -1233,7 +1262,7 @@ function clientHistory(cliente) {
   const rows = [];
   const currentMk = activeMonthKey();
   Object.keys(state).forEach(mk => {
-    if (mk === currentMk) return;
+    if (mk.localeCompare(currentMk) >= 0) return;
     const rec = state[mk] && state[mk][cliente];
     if (rec && rec.monto) rows.push({mk, monto: rec.monto, deuda: rec.deuda, estado: rec.estado, ajustado: !!rec.ajustado});
   });
@@ -1267,6 +1296,7 @@ function render() {
     if (term && !c.cliente.toLowerCase().includes(term)) return;
     if (!matchesFilter(c, rec)) return;
     if (activeMedio !== "all" && !(c.medio || "").toLowerCase().startsWith(activeMedio.toLowerCase())) return;
+    if (activeFacturaOnly && c.factura !== "SI") return;
 
     const card = document.createElement("div");
     card.className = "card" + (openCard === c.cliente ? " open" : "");
@@ -1279,10 +1309,11 @@ function render() {
 
     const head = document.createElement("div");
     head.className = "card-head";
-    const medioLabel = c.medio && c.medio.trim().toLowerCase().startsWith("correo") ? "" : `<span class="badge medio">${c.medio || "?"}</span>`;
+    const medioIsWhatsapp = c.medio && c.medio.trim().toLowerCase() === "whatsapp";
+    const medioLabel = c.medio && c.medio.trim().toLowerCase().startsWith("correo") ? "" : `<span class="badge ${medioIsWhatsapp ? "whatsapp" : "medio"}">${c.medio || "?"}</span>`;
     const newLabel = c.custom ? `<span class="badge medio">Nuevo</span>` : "";
     const facturaIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`;
-    const facturaLabel = c.factura === "SI" ? `<span class="badge factura" title="Se adjunta factura">${facturaIcon}<span>Factura (${escapeHtml(c.facturaPor || "sin asignar")})</span></span>` : "";
+    const facturaLabel = c.factura === "SI" ? `<span class="badge factura" title="Se adjunta factura">${facturaIcon}<span>Facturar (${escapeHtml(c.facturaPor || "sin asignar")})</span></span>` : "";
     const shownEmail = effectiveEmail(c);
     const descText = descriptions[c.cliente] || "";
     head.innerHTML = `
@@ -1304,13 +1335,15 @@ function render() {
       body.className = "card-body";
 
       const hist = clientHistory(c.cliente);
+      const hasAjuste = hist.some(h => h.ajustado);
       const histHtml = hist.length
         ? hist.map(h => {
             const t = parseFloat(h.monto) + (parseFloat(h.deuda) || 0);
             const deudaNote = h.deuda ? ` (incl. deuda $${money(h.deuda)})` : "";
-            const ajusteNote = h.ajustado ? `<div class="history-note">Ajuste trimestral por inflación (INDEC) aplicado en ${monthKeyDisplay(h.mk)}.</div>` : "";
-            return `<div class="history-row"><span>${monthKeyDisplay(h.mk)}${h.estado ? " · " + h.estado : ""}</span><span class="h-amt">$${money(t)}${deudaNote}</span></div>${ajusteNote}`;
-          }).join("")
+            const mesText = h.ajustado ? `<strong>${monthKeyDisplay(h.mk)}</strong>` : monthKeyDisplay(h.mk);
+            const amtText = h.ajustado ? `<strong>$${money(t)}</strong>${deudaNote}*` : `$${money(t)}${deudaNote}`;
+            return `<div class="history-row"><span>${mesText}${h.estado ? " · " + h.estado : ""}</span><span class="h-amt">${amtText}</span></div>`;
+          }).join("") + (hasAjuste ? `<div class="history-note">* Ajuste trimestral por inflación (INDEC).</div>` : "")
         : `<div class="history-empty">Sin datos cargados en otros meses.</div>`;
 
       body.innerHTML = `
@@ -1392,7 +1425,7 @@ function render() {
         const slot = body.querySelector(".preview-slot");
         const s = buildSubject(c, rec2);
         if (!s) {
-          slot.innerHTML = `<div class="preview disabled">Cargá el monto de honorarios para generar el correo.</div>`;
+          slot.innerHTML = `<div class="preview disabled">Carga el monto de honorarios para generar el mensaje.</div>`;
           return;
         }
         const esCorreo = (c.medio || "").trim().toLowerCase().startsWith("correo");
@@ -1418,7 +1451,7 @@ function render() {
                ${thumbHtml}
                <div class="attach-info">
                  <div class="attach-name">${escapeHtml(img.name)}</div>
-                 <div class="attach-hint">Adjuntá este documento manualmente al enviar el correo — el texto copiado no incluye archivos.</div>
+                 <div class="attach-hint">Se adjunta automáticamente al generar el borrador en Gmail. Si copiás el texto para pegarlo manualmente, el archivo no se incluye.</div>
                </div>
                <button class="btn" data-remove-img>Quitar</button>
              </div>`
@@ -1471,8 +1504,10 @@ function render() {
           const reader = new FileReader();
           reader.onload = () => {
             try {
-              imageAttachments[imgKey] = {name: file.name, type: file.type, dataUrl: reader.result};
+              const record = {name: file.name, type: file.type, dataUrl: reader.result};
+              imageAttachments[imgKey] = record;
               saveImages(imageAttachments);
+              fbWrite(`images/${activeMonthKey()}/${fbKey(c.cliente)}`, Object.assign({cliente: c.cliente}, record));
               renderPreviewSlot();
             } catch (e) {
               toast("No se pudo guardar el documento (espacio insuficiente en el navegador).", true);
@@ -1485,6 +1520,7 @@ function render() {
           removeImgBtn.addEventListener("click", () => {
             delete imageAttachments[imgKey];
             saveImages(imageAttachments);
+            fbRemove(`images/${activeMonthKey()}/${fbKey(c.cliente)}`);
             renderPreviewSlot();
           });
         }
@@ -1567,6 +1603,14 @@ document.getElementById("medioFilters").addEventListener("click", (e) => {
   if (!btn) return;
   activeMedio = btn.dataset.m;
   document.querySelectorAll("#medioFilters button").forEach(b => b.classList.toggle("active", b === btn));
+  render();
+});
+
+document.getElementById("facturaFilterBtn").addEventListener("click", () => {
+  activeFacturaOnly = !activeFacturaOnly;
+  const btn = document.getElementById("facturaFilterBtn");
+  btn.classList.toggle("active", activeFacturaOnly);
+  btn.setAttribute("aria-pressed", String(activeFacturaOnly));
   render();
 });
 
@@ -1717,6 +1761,7 @@ function deleteCustomClient(name) {
   fbRemove(`emails/${fbKey(name)}`);
   Object.keys(imageAttachments).forEach(k => { if (k.startsWith(name + "|")) delete imageAttachments[k]; });
   saveImages(imageAttachments);
+  Object.keys(state).forEach(mk => fbRemove(`images/${mk}/${fbKey(name)}`));
   delete descriptions[name];
   saveDescriptions(descriptions);
   fbRemove(`descriptions/${fbKey(name)}`);
@@ -1998,19 +2043,39 @@ function utf8ToBase64(str) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
-function buildRawGmailMessage(to, subject, bodyText) {
+function buildRawGmailMessage(to, subject, bodyText, attachment) {
   const subjectEncoded = "=?UTF-8?B?" + utf8ToBase64(subject) + "?=";
+  if (!attachment) {
+    const message =
+      `To: ${to}\r\n` +
+      `Subject: ${subjectEncoded}\r\n` +
+      `MIME-Version: 1.0\r\n` +
+      `Content-Type: text/plain; charset="UTF-8"\r\n\r\n` +
+      bodyText;
+    return utf8ToBase64(message).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  const boundary = "cdra_" + Math.random().toString(36).slice(2);
+  const base64Data = (attachment.dataUrl.split(",")[1] || "").replace(/.{76}/g, "$&\r\n");
+  const safeName = String(attachment.name || "adjunto").replace(/"/g, "'");
   const message =
     `To: ${to}\r\n` +
     `Subject: ${subjectEncoded}\r\n` +
     `MIME-Version: 1.0\r\n` +
+    `Content-Type: multipart/mixed; boundary="${boundary}"\r\n\r\n` +
+    `--${boundary}\r\n` +
     `Content-Type: text/plain; charset="UTF-8"\r\n\r\n` +
-    bodyText;
+    bodyText + `\r\n\r\n` +
+    `--${boundary}\r\n` +
+    `Content-Type: ${attachment.type || "application/octet-stream"}; name="${safeName}"\r\n` +
+    `Content-Disposition: attachment; filename="${safeName}"\r\n` +
+    `Content-Transfer-Encoding: base64\r\n\r\n` +
+    base64Data + `\r\n` +
+    `--${boundary}--`;
   return utf8ToBase64(message).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-async function createGmailDraft(token, to, subject, bodyText) {
-  const raw = buildRawGmailMessage(to, subject, bodyText);
+async function createGmailDraft(token, to, subject, bodyText, attachment) {
+  const raw = buildRawGmailMessage(to, subject, bodyText, attachment);
   const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/drafts", {
     method: "POST",
     headers: {"Authorization": "Bearer " + token, "Content-Type": "application/json"},
@@ -2049,8 +2114,9 @@ async function syncDraftsToGmail() {
       btn.textContent = `Creando borradores… ${i + 1}/${targets.length}`;
       const eb = effectiveBodyFor(c);
       const email = effectiveEmail(c);
+      const attachment = imageAttachments[attachmentKey(c.cliente)];
       try {
-        const draft = await createGmailDraft(token, email, eb.subject, eb.body);
+        const draft = await createGmailDraft(token, email, eb.subject, eb.body, attachment);
         fbWrite(`gmailDrafts/${mk}/${fbKey(c.cliente)}`, {cliente: c.cliente, draftId: draft.id});
         ok++;
       } catch (e) {
@@ -2203,6 +2269,48 @@ function attachFbListeners() {
     saveCustomClientes(customClientes);
     safeRerender();
   });
+
+  fbDb.ref("images").on("value", snap => {
+    const val = snap.val() || {};
+    const newImages = {};
+    Object.keys(val).forEach(mk => {
+      Object.keys(val[mk] || {}).forEach(k => {
+        const r = val[mk][k];
+        if (r && r.cliente) newImages[r.cliente + "|" + mk] = {name: r.name, type: r.type, dataUrl: r.dataUrl};
+      });
+    });
+    imageAttachments = newImages;
+    saveImages(imageAttachments);
+    safeRerender();
+  });
+}
+
+const INACTIVITY_LIMIT_MS = 60 * 60 * 1000;
+let inactivityTimer = null;
+let loggedOutByInactivity = false;
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    loggedOutByInactivity = true;
+    firebase.auth().signOut();
+  }, INACTIVITY_LIMIT_MS);
+}
+
+let inactivityListenersWired = false;
+function startInactivityWatcher() {
+  if (!inactivityListenersWired) {
+    inactivityListenersWired = true;
+    ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"].forEach(evt => {
+      document.addEventListener(evt, resetInactivityTimer, {passive: true});
+    });
+  }
+  resetInactivityTimer();
+}
+
+function stopInactivityWatcher() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = null;
 }
 
 function startApp() {
@@ -2219,6 +2327,7 @@ function startApp() {
         logoutBtn.addEventListener("click", () => firebase.auth().signOut());
       }
     }
+    if (fbHasAuth) startInactivityWatcher();
   } else {
     setSyncStatus("off", "Solo en este navegador (sin conexión a la nube)");
   }
@@ -2260,8 +2369,13 @@ if (fbHasAuth) {
     if (user) {
       startApp();
     } else {
+      stopInactivityWatcher();
       document.getElementById("loginGate").style.display = "flex";
       document.getElementById("appRoot").style.display = "none";
+      if (loggedOutByInactivity) {
+        document.getElementById("loginError").textContent = "Se cerró la sesión por inactividad. Volvé a ingresar.";
+        loggedOutByInactivity = false;
+      }
     }
   });
 } else {
