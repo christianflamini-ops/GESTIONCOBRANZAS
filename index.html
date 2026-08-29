@@ -1045,7 +1045,7 @@ const CLIENTES = [
 
 // --- Borradores de Gmail (Google Identity Services + Gmail API) ---
 const GOOGLE_CLIENT_ID = "689249858006-8va2gvtonuf2b8rfelt9pob2qon3ta9t.apps.googleusercontent.com";
-const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.compose";
+const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.compose https://www.googleapis.com/auth/gmail.settings.basic";
 
 // --- Sincronización compartida (Firebase Realtime Database) ---
 const firebaseConfig = {
@@ -2043,15 +2043,37 @@ function utf8ToBase64(str) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
-function buildRawGmailMessage(to, subject, bodyText, attachment) {
+let gmailSignatureCache = null;
+async function getGmailSignature(token) {
+  if (gmailSignatureCache !== null) return gmailSignatureCache;
+  try {
+    const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs", {
+      headers: {"Authorization": "Bearer " + token}
+    });
+    if (!res.ok) { gmailSignatureCache = ""; return ""; }
+    const data = await res.json();
+    const list = data.sendAs || [];
+    const primary = list.find(s => s.isDefault) || list.find(s => s.isPrimary) || list[0];
+    gmailSignatureCache = (primary && primary.signature) || "";
+  } catch (e) {
+    gmailSignatureCache = "";
+  }
+  return gmailSignatureCache;
+}
+
+function buildRawGmailMessage(to, subject, bodyText, attachment, signatureHtml) {
   const subjectEncoded = "=?UTF-8?B?" + utf8ToBase64(subject) + "?=";
+  const bodyPart = signatureHtml
+    ? `Content-Type: text/html; charset="UTF-8"\r\n\r\n` +
+      `<div style="white-space:pre-wrap;font-family:Arial,sans-serif;font-size:14px">${escapeHtml(bodyText)}</div><br>${signatureHtml}`
+    : `Content-Type: text/plain; charset="UTF-8"\r\n\r\n${bodyText}`;
+
   if (!attachment) {
     const message =
       `To: ${to}\r\n` +
       `Subject: ${subjectEncoded}\r\n` +
       `MIME-Version: 1.0\r\n` +
-      `Content-Type: text/plain; charset="UTF-8"\r\n\r\n` +
-      bodyText;
+      bodyPart;
     return utf8ToBase64(message).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
   const boundary = "cdra_" + Math.random().toString(36).slice(2);
@@ -2063,8 +2085,7 @@ function buildRawGmailMessage(to, subject, bodyText, attachment) {
     `MIME-Version: 1.0\r\n` +
     `Content-Type: multipart/mixed; boundary="${boundary}"\r\n\r\n` +
     `--${boundary}\r\n` +
-    `Content-Type: text/plain; charset="UTF-8"\r\n\r\n` +
-    bodyText + `\r\n\r\n` +
+    bodyPart + `\r\n\r\n` +
     `--${boundary}\r\n` +
     `Content-Type: ${attachment.type || "application/octet-stream"}; name="${safeName}"\r\n` +
     `Content-Disposition: attachment; filename="${safeName}"\r\n` +
@@ -2074,8 +2095,8 @@ function buildRawGmailMessage(to, subject, bodyText, attachment) {
   return utf8ToBase64(message).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-async function createGmailDraft(token, to, subject, bodyText, attachment) {
-  const raw = buildRawGmailMessage(to, subject, bodyText, attachment);
+async function createGmailDraft(token, to, subject, bodyText, attachment, signatureHtml) {
+  const raw = buildRawGmailMessage(to, subject, bodyText, attachment, signatureHtml);
   const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/drafts", {
     method: "POST",
     headers: {"Authorization": "Bearer " + token, "Content-Type": "application/json"},
@@ -2107,6 +2128,8 @@ async function syncDraftsToGmail() {
       return;
     }
 
+    const signatureHtml = await getGmailSignature(token);
+
     const mk = activeMonthKey();
     let ok = 0, fail = 0;
     for (let i = 0; i < targets.length; i++) {
@@ -2116,7 +2139,7 @@ async function syncDraftsToGmail() {
       const email = effectiveEmail(c);
       const attachment = imageAttachments[attachmentKey(c.cliente)];
       try {
-        const draft = await createGmailDraft(token, email, eb.subject, eb.body, attachment);
+        const draft = await createGmailDraft(token, email, eb.subject, eb.body, attachment, signatureHtml);
         fbWrite(`gmailDrafts/${mk}/${fbKey(c.cliente)}`, {cliente: c.cliente, draftId: draft.id});
         ok++;
       } catch (e) {
