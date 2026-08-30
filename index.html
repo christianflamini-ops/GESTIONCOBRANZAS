@@ -144,6 +144,41 @@
     padding: 32px 28px;
   }
 
+  .sync-overlay {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg);
+  }
+
+  .sync-overlay-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .sync-overlay-text {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
   .login-card h2 {
     font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
     font-size: 20px;
@@ -943,6 +978,13 @@
     </div>
     <button class="btn primary" id="loginSubmit" style="width:100%; justify-content:center;">Ingresar</button>
     <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div id="syncOverlay" class="sync-overlay" style="display:none;">
+  <div class="sync-overlay-card">
+    <div class="spinner"></div>
+    <div class="sync-overlay-text">Sincronizando con la nube…<br>Esperá un momento.</div>
   </div>
 </div>
 
@@ -2343,7 +2385,8 @@ function attachFbListeners() {
     });
     state = newState;
     saveState(state);
-    safeRerender();
+    if (!cloudSyncReady) revealAppAfterSync();
+    else safeRerender();
   });
 
   fbDb.ref("emails").on("value", snap => {
@@ -2463,11 +2506,33 @@ async function migrateClientRename(oldName, newName) {
   }
 }
 
+let cloudSyncReady = false;
+function revealAppAfterSync() {
+  if (cloudSyncReady) return;
+  cloudSyncReady = true;
+  document.getElementById("syncOverlay").style.display = "none";
+  document.getElementById("appRoot").style.display = "";
+  updateChangesBtn();
+  renderMonthTabs();
+  render();
+}
+
 function startApp() {
   document.getElementById("loginGate").style.display = "none";
-  document.getElementById("appRoot").style.display = "";
 
   if (fbEnabled) {
+    if (fbHasAuth && !cloudSyncReady) {
+      document.getElementById("syncOverlay").style.display = "flex";
+      document.getElementById("appRoot").style.display = "none";
+      setTimeout(() => {
+        if (!cloudSyncReady) {
+          revealAppAfterSync();
+          toast("No se pudo confirmar la sincronización; mostrando datos guardados localmente.", true);
+        }
+      }, 8000);
+    } else {
+      document.getElementById("appRoot").style.display = "";
+    }
     attachFbListeners();
     const logoutBtn = document.getElementById("logoutBtnTop");
     if (logoutBtn && fbHasAuth) {
@@ -2482,12 +2547,15 @@ function startApp() {
       migrateClientRename("POLIMANDI IRENE - PETRAZZINI RICARDO", "POLIMANDI IRENE");
     }
   } else {
+    document.getElementById("appRoot").style.display = "";
     setSyncStatus("off", "Solo en este navegador (sin conexión a la nube)");
   }
 
-  updateChangesBtn();
-  renderMonthTabs();
-  render();
+  if (!fbEnabled || !fbHasAuth || cloudSyncReady) {
+    updateChangesBtn();
+    renderMonthTabs();
+    render();
+  }
 }
 
 let fbHasAuth = fbEnabled && typeof firebase.auth === "function";
@@ -2523,6 +2591,8 @@ if (fbHasAuth) {
       startApp();
     } else {
       stopInactivityWatcher();
+      cloudSyncReady = false;
+      document.getElementById("syncOverlay").style.display = "none";
       document.getElementById("loginGate").style.display = "flex";
       document.getElementById("appRoot").style.display = "none";
       if (loggedOutByInactivity) {
