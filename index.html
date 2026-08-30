@@ -441,6 +441,16 @@
     gap: 10px;
   }
 
+  .group-header {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 10px 4px 0;
+  }
+  .group-header:first-child { padding-top: 0; }
+
   .card {
     background: var(--surface);
     border-radius: 18px;
@@ -482,6 +492,29 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .card-head .name span.fiscal {
+    display: block;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .copy-cuit-btn {
+    display: inline-flex;
+    vertical-align: -1px;
+    border: none;
+    background: none;
+    padding: 2px;
+    margin: 0 1px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .copy-cuit-btn:hover { color: var(--accent); background: var(--accent-tint); }
 
   .badge {
     font-size: 12px;
@@ -1001,48 +1034,48 @@ const CLIENTES = [
   {cliente:"ANTONELLA (REF LEONARDO)", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"BAÑOS PABLO Y BAÑOS PADRE", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"BARRETO CLAUDIO (PLACERES ENVASADOS)", medio:"Whatsapp", email:"", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"BERARDO SAS", medio:"Correo", email:"administracion@berardost.com.ar, gberardo@berardost.com.ar", cuenta:"Banco Galicia\nTitular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"SI", facturaPor:"Costantini", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"BERARDO SAS", medio:"Correo", email:"administracion@berardost.com.ar, gberardo@berardost.com.ar", cuenta:"Banco Galicia\nTitular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"SI", facturaPor:"Costantini", cuit:"30716890933", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"BIANCHI MARIA CLAUDIA (MADRE ANTONELLA)", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CANARIO", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CAPDEVILA MATIAS", medio:"Correo", email:"matias.capdevila@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CARRANZA ELENA", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CARRANZA MARCELA", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CARRARA GERMAN LUIS", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"CONSORCIO FLORIANOPOLIS", medio:"Correo", email:"copiarvis@yahoo.com.ar", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CONSORCIO FLORIANOPOLIS", medio:"Correo", email:"copiarvis@yahoo.com.ar", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", cuit:"30644736195", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CONY FUREY", medio:"Whatsapp", email:"", cuenta:"ALIAS: christian.flamini.mp\nCVU: 0000003100022129217457\nNOMBRE: CHRISTIAN IVAN FLAMINI", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CORDOBA JUAN", medio:"Correo", email:"juancebea@gmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CORTEX", medio:"Whatsapp", email:"", cuenta:"", factura:"", comentario:"", cierre:""},
   {cliente:"CRAVERO GASTON (PRIMO)", medio:"Correo", email:"gcravero06@hotmail.com", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"CRAVERO LEONARDO", medio:"Correo", email:"leo.cravero@hotmail.com", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"CUR y CAUSSA LUCAS", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"SI", facturaPor:"Nacho", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"DESENCHUFADOS", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"SI", facturaPor:"Urgorri", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"CUR y CAUSSA LUCAS", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"SI", facturaPor:"Nacho", cuit:"30716728281", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"DESENCHUFADOS", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"SI", facturaPor:"Urgorri", cuit:"30716928361", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"DIAZ ALEJANDRO (ODONTÓLOGO)", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"ECSDEV SAS", medio:"Correo", email:"l.pedrazzi@ec-systems.de", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"ENRICO HAYDEE (LINGUA MATIAS)", medio:"Correo", email:"matiaslingua@gmail.com, matiaslingua@unc.edu.ar", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"SI", facturaPor:"Nacho", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"ECSDEV SAS", medio:"Correo", email:"l.pedrazzi@ec-systems.de", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", cuit:"30717165655", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"ENRICO HAYDEE (LINGUA MATIAS)", medio:"Correo", email:"matiaslingua@gmail.com, matiaslingua@unc.edu.ar", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"SI", facturaPor:"Nacho", cuit:"27015613004", condicionIva:"Sujeto Exento", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"FERNANDEZ DIEGO", medio:"Correo", email:"dierocba@gmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"FUNDER", medio:"Correo", email:"kmonaco@kumelenescuela.edu.ar", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"FUNDER", medio:"Correo", email:"kmonaco@kumelenescuela.edu.ar", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", cuit:"30685376969", condicionIva:"Sujeto Exento", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"GOL ZONE SAS", medio:"Correo", email:"germanpiazza@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"INCAST", medio:"Correo", email:"", cuenta:"", factura:"", comentario:"", cierre:""},
   {cliente:"INMACULADA", medio:"Correo", email:"", cuenta:"", factura:"", comentario:"", cierre:""},
   {cliente:"JASKOWSKY CECILIA", medio:"Correo", email:"cecijako@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"MARTELLI AGROSER", medio:"Correo", email:"bruno@martellicba.com.ar, brunomartelli25@gmail.com", cuenta:"Banco Galicia\nTitular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"SI", facturaPor:"Costantini", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MARTELLI AGROSER", medio:"Correo", email:"bruno@martellicba.com.ar, brunomartelli25@gmail.com", cuenta:"Banco Galicia\nTitular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"SI", facturaPor:"Costantini", cuit:"30717627071", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"MARTIN ENRIQUE Y CEBALLOS MIRIAM", medio:"Correo", email:"martinjoseenrique@hotmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"MATIAS YELICICH", medio:"Whatsapp", email:"", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"MATICLAR SAS", medio:"Correo", email:"maticlar.sas@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"Solo precisaríamos confirmar si los mismos serán abonados en efectivo o transferidos a los fines de emitir las facturas correspondientes.", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"MONTIVERO, FARRAN Y OVANDO", medio:"Correo", email:"montivero.daniel.e@gmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"MOYANO PAULA", medio:"Correo", email:"pulanoyano@gmail.com", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"MXP S.R.L.", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"NET LOG", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"MXP S.R.L.", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", cuit:"30715334379", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"NET LOG", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", cuit:"30707820248", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"OBERTO TATO", medio:"Whatsapp", email:"", cuenta:"CHEQUE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"PIAZZA RAUL (PADRE)", medio:"Correo", email:"piazzaraul@gmail.com", cuenta:"Titular: Costantini Alessandro\nDU: 92828724\nCTA: 4015841-0 770-7\nCBU: 0070770330004015841079\nCUIL: 20928287247\nALIAS: LOSAS.BLOC.SALIDA", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"PILAR Y EMANUEL", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 35671541\nCTA: 401745051964\nCBU: 0070196530004017450541\nCUIL: 20356715412\nALIAS: IGNACIODIBERT", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"POLIMANDI IRENE - PETRAZZINI RICARDO", medio:"Correo", email:"mipolimandi@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"SI", facturaPor:"Urgorri", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"POLIMANDI IRENE", medio:"Correo", email:"mipolimandi@gmail.com", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"REISCHENBACHER MATTHIAS", medio:"Correo", email:"m.reischenbacher@ec-systems.de", cuenta:"Bancor Cuenta CA $ 913 0013096807\nCuit/Cuil: 27297533741\nNombre y Apellido: MERCEDES LAURA URGORRI\nCBU: 0200913511000013096876\nAlias: LICOR.MONO.TE", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"SEVERINI", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:""},
   {cliente:"SI", medio:"Whatsapp", email:"", cuenta:"", factura:"", comentario:"", cierre:""},
-  {cliente:"TM MILC SAS", medio:"Correo", email:"tabladamotos@outlook.com, carolina_camino_1@hotmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"TM MILC SAS", medio:"Correo", email:"tabladamotos@outlook.com, carolina_camino_1@hotmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", cuit:"30717791300", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"VAZQUEZ MARCELINO", medio:"Correo", email:"marceovazquez1960@gmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"NO", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
-  {cliente:"VETTORAZZI SAS", medio:"Correo", email:"maxivetto@gmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
+  {cliente:"VETTORAZZI SAS", medio:"Correo", email:"maxivetto@gmail.com", cuenta:"Banco Galicia\nDU: 25141666\nCTA: 4884431-3 076-7\nCBU: 0070076430004884431377\nCUIL: 20251416665\nALIAS: TEMPLO.TUNICA.SALERO", factura:"SI", facturaPor:"Diego", cuit:"30719507030", condicionIva:"RI", comentario:"", cierre:"Ante cualquier consulta, quedamos a disposición. Saludos!"},
   {cliente:"VIVIANA", medio:"Whatsapp", email:"", cuenta:"Banco Galicia\nDU: 40203024\nCTA: 4026250-1 362-4\nCBU: 0070362630004026250145\nCUIL: 27402030246\nALIAS: DIBERT.MARIANA", factura:"NO", comentario:"", cierre:""}
 ];
 
@@ -1286,11 +1319,18 @@ function render() {
   const list = document.getElementById("list");
   list.innerHTML = "";
   const term = searchTerm.trim().toLowerCase();
-  const ALL = allClientes().slice().sort((a, b) =>
-    sortOrder === "za" ? b.cliente.localeCompare(a.cliente, "es") : a.cliente.localeCompare(b.cliente, "es")
-  );
+  const ALL = allClientes().slice().sort((a, b) => {
+    if (activeFacturaOnly) {
+      const fa = a.facturaPor || "Sin asignar";
+      const fb = b.facturaPor || "Sin asignar";
+      const groupCmp = sortOrder === "za" ? fb.localeCompare(fa, "es") : fa.localeCompare(fb, "es");
+      if (groupCmp !== 0) return groupCmp;
+    }
+    return sortOrder === "za" ? b.cliente.localeCompare(a.cliente, "es") : a.cliente.localeCompare(b.cliente, "es");
+  });
 
   let total = ALL.length, pendiente = 0, enviado = 0;
+  let lastGroupLabel = null;
 
   ALL.forEach(c => {
     const rec = getRec(c.cliente);
@@ -1302,6 +1342,17 @@ function render() {
     if (!matchesFilter(c, rec)) return;
     if (activeMedio !== "all" && !(c.medio || "").toLowerCase().startsWith(activeMedio.toLowerCase())) return;
     if (activeFacturaOnly && c.factura !== "SI") return;
+
+    if (activeFacturaOnly) {
+      const groupLabel = c.facturaPor || "Sin asignar";
+      if (groupLabel !== lastGroupLabel) {
+        lastGroupLabel = groupLabel;
+        const groupHeader = document.createElement("div");
+        groupHeader.className = "group-header";
+        groupHeader.textContent = groupLabel;
+        list.appendChild(groupHeader);
+      }
+    }
 
     const card = document.createElement("div");
     card.className = "card" + (openCard === c.cliente ? " open" : "");
@@ -1321,14 +1372,25 @@ function render() {
     const facturaLabel = c.factura === "SI" ? `<span class="badge factura" title="Se adjunta factura">${facturaIcon}<span>Facturar (${escapeHtml(c.facturaPor || "sin asignar")})</span></span>` : "";
     const shownEmail = effectiveEmail(c);
     const descText = descriptions[c.cliente] || "";
+    const copyCuitIcon = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+    const fiscalText = activeFacturaOnly && c.factura === "SI" && c.cuit
+      ? `<span class="fiscal">CUIT: ${escapeHtml(c.cuit)} <button type="button" class="copy-cuit-btn" data-cuit="${escapeAttr(c.cuit)}" title="Copiar CUIT">${copyCuitIcon}</button> · Condición IVA: ${escapeHtml(c.condicionIva || "sin datos")}</span>`
+      : "";
     head.innerHTML = `
       <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
-      <div class="name">${c.cliente}<span class="email">${shownEmail || "sin email cargado"}</span>${descText ? `<span class="desc">${escapeHtml(descText)}</span>` : ''}</div>
+      <div class="name">${c.cliente}<span class="email">${shownEmail || "sin email cargado"}</span>${descText ? `<span class="desc">${escapeHtml(descText)}</span>` : ''}${fiscalText}</div>
       ${newLabel}
       ${medioLabel}
       ${facturaLabel}
       ${badge}
     `;
+    const copyCuitBtn = head.querySelector(".copy-cuit-btn");
+    if (copyCuitBtn) {
+      copyCuitBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        copyText(copyCuitBtn.dataset.cuit, "CUIT copiado");
+      });
+    }
     head.addEventListener("click", () => {
       if (unsavedHonorariosClient === c.cliente) {
         const discard = confirm("Tenés cambios sin guardar en Honorarios / Deuda para " + c.cliente + ". ¿Salir sin guardarlos?");
@@ -2358,6 +2420,49 @@ function stopInactivityWatcher() {
   inactivityTimer = null;
 }
 
+async function migrateClientRename(oldName, newName) {
+  if (!fbEnabled || !fbHasAuth) return;
+  try {
+    const oldKey = fbKey(oldName), newKey = fbKey(newName);
+
+    const stateSnap = await fbDb.ref("state").get();
+    const stateVal = stateSnap.val() || {};
+    for (const mk of Object.keys(stateVal)) {
+      const monthData = stateVal[mk] || {};
+      if (monthData[oldKey] && !monthData[newKey]) {
+        const rec = Object.assign({}, monthData[oldKey], {cliente: newName});
+        await fbDb.ref(`state/${mk}/${newKey}`).set(rec);
+        await fbDb.ref(`state/${mk}/${oldKey}`).remove();
+      }
+    }
+
+    const emailSnap = await fbDb.ref(`emails/${oldKey}`).get();
+    if (emailSnap.exists()) {
+      await fbDb.ref(`emails/${newKey}`).set({cliente: newName, email: emailSnap.val().email});
+      await fbDb.ref(`emails/${oldKey}`).remove();
+    }
+
+    const descSnap = await fbDb.ref(`descriptions/${oldKey}`).get();
+    if (descSnap.exists()) {
+      await fbDb.ref(`descriptions/${newKey}`).set({cliente: newName, text: descSnap.val().text});
+      await fbDb.ref(`descriptions/${oldKey}`).remove();
+    }
+
+    const imagesSnap = await fbDb.ref("images").get();
+    const imagesVal = imagesSnap.val() || {};
+    for (const mk of Object.keys(imagesVal)) {
+      const monthImgs = imagesVal[mk] || {};
+      if (monthImgs[oldKey] && !monthImgs[newKey]) {
+        const rec = Object.assign({}, monthImgs[oldKey], {cliente: newName});
+        await fbDb.ref(`images/${mk}/${newKey}`).set(rec);
+        await fbDb.ref(`images/${mk}/${oldKey}`).remove();
+      }
+    }
+  } catch (e) {
+    console.error("Error migrando cliente renombrado", e);
+  }
+}
+
 function startApp() {
   document.getElementById("loginGate").style.display = "none";
   document.getElementById("appRoot").style.display = "";
@@ -2372,7 +2477,10 @@ function startApp() {
         logoutBtn.addEventListener("click", () => firebase.auth().signOut());
       }
     }
-    if (fbHasAuth) startInactivityWatcher();
+    if (fbHasAuth) {
+      startInactivityWatcher();
+      migrateClientRename("POLIMANDI IRENE - PETRAZZINI RICARDO", "POLIMANDI IRENE");
+    }
   } else {
     setSyncStatus("off", "Solo en este navegador (sin conexión a la nube)");
   }
