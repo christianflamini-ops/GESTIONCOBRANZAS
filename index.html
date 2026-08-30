@@ -2476,49 +2476,6 @@ function stopInactivityWatcher() {
   inactivityTimer = null;
 }
 
-async function migrateClientRename(oldName, newName) {
-  if (!fbEnabled || !fbHasAuth) return;
-  try {
-    const oldKey = fbKey(oldName), newKey = fbKey(newName);
-
-    const stateSnap = await fbDb.ref("state").get();
-    const stateVal = stateSnap.val() || {};
-    for (const mk of Object.keys(stateVal)) {
-      const monthData = stateVal[mk] || {};
-      if (monthData[oldKey] && !monthData[newKey]) {
-        const rec = Object.assign({}, monthData[oldKey], {cliente: newName});
-        await fbDb.ref(`state/${mk}/${newKey}`).set(rec);
-        await fbDb.ref(`state/${mk}/${oldKey}`).remove();
-      }
-    }
-
-    const emailSnap = await fbDb.ref(`emails/${oldKey}`).get();
-    if (emailSnap.exists()) {
-      await fbDb.ref(`emails/${newKey}`).set({cliente: newName, email: emailSnap.val().email});
-      await fbDb.ref(`emails/${oldKey}`).remove();
-    }
-
-    const descSnap = await fbDb.ref(`descriptions/${oldKey}`).get();
-    if (descSnap.exists()) {
-      await fbDb.ref(`descriptions/${newKey}`).set({cliente: newName, text: descSnap.val().text});
-      await fbDb.ref(`descriptions/${oldKey}`).remove();
-    }
-
-    const imagesSnap = await fbDb.ref("images").get();
-    const imagesVal = imagesSnap.val() || {};
-    for (const mk of Object.keys(imagesVal)) {
-      const monthImgs = imagesVal[mk] || {};
-      if (monthImgs[oldKey] && !monthImgs[newKey]) {
-        const rec = Object.assign({}, monthImgs[oldKey], {cliente: newName});
-        await fbDb.ref(`images/${mk}/${newKey}`).set(rec);
-        await fbDb.ref(`images/${mk}/${oldKey}`).remove();
-      }
-    }
-  } catch (e) {
-    console.error("Error migrando cliente renombrado", e);
-  }
-}
-
 let cloudSyncReady = false;
 function revealAppAfterSync() {
   if (cloudSyncReady) return;
@@ -2551,7 +2508,6 @@ function startApp() {
     }
     if (fbHasAuth) {
       startInactivityWatcher();
-      migrateClientRename("POLIMANDI IRENE - PETRAZZINI RICARDO", "POLIMANDI IRENE");
     }
   } else {
     document.getElementById("appRoot").style.display = "";
