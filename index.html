@@ -2494,6 +2494,12 @@ function startApp() {
     if (fbHasAuth && !cloudSyncReady) {
       document.getElementById("syncOverlay").style.display = "flex";
       document.getElementById("appRoot").style.display = "none";
+      setTimeout(() => {
+        if (!cloudSyncReady) {
+          revealAppAfterSync();
+          toast("Mostrando datos guardados mientras se termina de sincronizar.");
+        }
+      }, 5000);
     } else {
       document.getElementById("appRoot").style.display = "";
     }
