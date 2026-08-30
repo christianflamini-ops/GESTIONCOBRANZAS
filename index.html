@@ -729,6 +729,9 @@
     color: white;
   }
   .btn.primary:hover { background: var(--accent-strong); }
+  .btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+
+  .honorarios-save-row { margin: 10px 0 14px; }
 
   .toast {
     position: fixed;
@@ -1151,6 +1154,7 @@ let openCard = null;
 let activeFilter = "all";
 let activeMedio = "all";
 let activeFacturaOnly = false;
+let unsavedHonorariosClient = null;
 let sortOrder = "az";
 let searchTerm = "";
 let showAddForm = false;
@@ -1278,6 +1282,7 @@ function matchesFilter(c, rec) {
 }
 
 function render() {
+  unsavedHonorariosClient = null;
   const list = document.getElementById("list");
   list.innerHTML = "";
   const term = searchTerm.trim().toLowerCase();
@@ -1325,6 +1330,10 @@ function render() {
       ${badge}
     `;
     head.addEventListener("click", () => {
+      if (unsavedHonorariosClient === c.cliente) {
+        const discard = confirm("Tenés cambios sin guardar en Honorarios / Deuda para " + c.cliente + ". ¿Salir sin guardarlos?");
+        if (!discard) return;
+      }
       openCard = openCard === c.cliente ? null : c.cliente;
       render();
     });
@@ -1353,13 +1362,16 @@ function render() {
             <input type="number" inputmode="decimal" step="0.01" id="monto-${cssId(c.cliente)}" placeholder="0.00" value="${escapeAttr(rec.monto)}">
           </div>
           <div class="field">
-            <label for="deuda-${cssId(c.cliente)}">Deuda acumulada anterior ($)</label>
-            <input type="number" inputmode="decimal" step="0.01" id="deuda-${cssId(c.cliente)}" placeholder="0.00 (opcional)" value="${escapeAttr(rec.deuda)}">
+            <label for="deuda-${cssId(c.cliente)}">Deuda acumulada anterior ($) (opcional)</label>
+            <input type="number" inputmode="decimal" step="0.01" id="deuda-${cssId(c.cliente)}" placeholder="0.00" value="${escapeAttr(rec.deuda)}">
           </div>
+        </div>
+        <div class="actions honorarios-save-row">
+          <button class="btn primary" data-save-honorarios disabled>Guardar cambios</button>
         </div>
         <label class="checkbox-row" for="ajustado-${cssId(c.cliente)}">
           <input type="checkbox" id="ajustado-${cssId(c.cliente)}" ${rec.ajustado ? "checked" : ""}>
-          Los honorarios se actualizaron (ajuste trimestral por inflación, INDEC)
+          Los honorarios se actualizaron (ajuste trimestral por inflación)
         </label>
         <div class="history">
           <div class="h-title">Meses anteriores</div>
@@ -1382,10 +1394,20 @@ function render() {
       `;
 
       const montoInput = body.querySelector(`#monto-${cssId(c.cliente)}`);
-      montoInput.addEventListener("input", () => { setRec(c.cliente, {monto: montoInput.value}); renderPreviewSlot(); updateStatsOnly(); renderMonthTabs(); });
-
       const deudaInput = body.querySelector(`#deuda-${cssId(c.cliente)}`);
-      deudaInput.addEventListener("input", () => { setRec(c.cliente, {deuda: deudaInput.value}); renderPreviewSlot(); });
+      const saveHonorariosBtn = body.querySelector('[data-save-honorarios]');
+      const markDirty = () => { saveHonorariosBtn.disabled = false; unsavedHonorariosClient = c.cliente; };
+      montoInput.addEventListener("input", markDirty);
+      deudaInput.addEventListener("input", markDirty);
+      saveHonorariosBtn.addEventListener("click", () => {
+        setRec(c.cliente, {monto: montoInput.value, deuda: deudaInput.value});
+        saveHonorariosBtn.disabled = true;
+        unsavedHonorariosClient = null;
+        renderPreviewSlot();
+        updateStatsOnly();
+        renderMonthTabs();
+        toast("Cambios guardados");
+      });
 
       const ajustadoInput = body.querySelector(`#ajustado-${cssId(c.cliente)}`);
       ajustadoInput.addEventListener("change", () => { setRec(c.cliente, {ajustado: ajustadoInput.checked}); renderPreviewSlot(); });
