@@ -565,6 +565,52 @@
   }
   .copy-cuit-btn:hover { color: var(--accent); background: var(--accent-tint); }
 
+  .edit-name-btn {
+    display: inline-flex;
+    vertical-align: -1px;
+    border: none;
+    background: none;
+    padding: 3px;
+    margin-left: 2px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .edit-name-btn:hover { color: var(--accent); background: var(--accent-tint); }
+
+  .editing-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .rename-input {
+    flex: 1;
+    min-width: 0;
+    padding: 5px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  .rename-save-btn, .rename-cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .rename-save-btn { background: var(--ok-tint); color: var(--ok); }
+  .rename-cancel-btn { background: var(--surface-sunken); color: var(--text-muted); }
+
   .badge {
     font-size: 12px;
     font-weight: 500;
@@ -1173,7 +1219,7 @@ function fbRemove(path) {
 let pendingRemoteRender = false;
 function isEditingSomething() {
   const active = document.activeElement;
-  return !!(active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA") && active.closest(".card-body, #addFormWrap"));
+  return !!(active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA") && active.closest(".card-body, .card-head, #addFormWrap"));
 }
 function safeRerender() {
   if (isEditingSomething()) { pendingRemoteRender = true; return; }
@@ -1193,6 +1239,7 @@ const CUSTOM_KEY = "cobranzas_estudio_flamini_clientes_nuevos_v1";
 const EMAIL_KEY = "cobranzas_estudio_flamini_emails_v1";
 const IMAGES_KEY = "cobranzas_estudio_flamini_imagenes_v1";
 const DESC_KEY = "cobranzas_estudio_flamini_descripcion_v1";
+const NAME_KEY = "cobranzas_estudio_flamini_nombres_v1";
 const MESES = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
 const MESES_NOMBRE = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
@@ -1217,6 +1264,17 @@ function loadEmails() {
 function saveEmails(e) {
   localStorage.setItem(EMAIL_KEY, JSON.stringify(e));
 }
+function loadNameOverrides() {
+  try { return JSON.parse(localStorage.getItem(NAME_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveNameOverrides(n) {
+  localStorage.setItem(NAME_KEY, JSON.stringify(n));
+}
+function displayName(c) {
+  const ov = nameOverrides[c.cliente];
+  return (ov && ov.nuevo) || c.cliente;
+}
 function loadImages() {
   try { return JSON.parse(localStorage.getItem(IMAGES_KEY)) || {}; }
   catch (e) { return {}; }
@@ -1239,6 +1297,8 @@ let customClientes = loadCustomClientes();
 let emailOverrides = loadEmails();
 let imageAttachments = loadImages();
 let descriptions = loadDescriptions();
+let nameOverrides = loadNameOverrides();
+let editingClientName = null;
 let openCard = null;
 let activeFilter = "all";
 let activeMedio = "all";
@@ -1304,7 +1364,7 @@ function money(n) {
 
 function buildSubject(c, rec) {
   if (!rec.monto) return "";
-  return `HONORARIOS ESTUDIO CDRA ${monthKeyDisplay(activeMonthKey())} - ${c.cliente}`.toUpperCase();
+  return `HONORARIOS ESTUDIO CDRA ${monthKeyDisplay(activeMonthKey())} - ${displayName(c)}`.toUpperCase();
 }
 
 function buildBodyTemplate(c, rec) {
@@ -1382,7 +1442,7 @@ function render() {
       const groupCmp = sortOrder === "za" ? fb.localeCompare(fa, "es") : fa.localeCompare(fb, "es");
       if (groupCmp !== 0) return groupCmp;
     }
-    return sortOrder === "za" ? b.cliente.localeCompare(a.cliente, "es") : a.cliente.localeCompare(b.cliente, "es");
+    return sortOrder === "za" ? displayName(b).localeCompare(displayName(a), "es") : displayName(a).localeCompare(displayName(b), "es");
   });
 
   let total = ALL.length, pendiente = 0, enviado = 0;
@@ -1394,7 +1454,7 @@ function render() {
     if (hasData && rec.estado === "Enviado") enviado++;
     else if (hasData) pendiente++;
 
-    if (term && !c.cliente.toLowerCase().includes(term)) return;
+    if (term && !displayName(c).toLowerCase().includes(term)) return;
     if (!matchesFilter(c, rec)) return;
     if (activeMedio !== "all" && !(c.medio || "").toLowerCase().startsWith(activeMedio.toLowerCase())) return;
     if (activeFacturaOnly && c.factura !== "SI") return;
@@ -1432,9 +1492,21 @@ function render() {
     const fiscalText = activeFacturaOnly && c.factura === "SI" && c.cuit
       ? `<span class="fiscal">CUIT: ${escapeHtml(c.cuit)} <button type="button" class="copy-cuit-btn" data-cuit="${escapeAttr(c.cuit)}" title="Copiar CUIT">${copyCuitIcon}</button> · Condición IVA: ${escapeHtml(c.condicionIva || "sin datos")}</span>`
       : "";
+    const dispName = displayName(c);
+    const isEditingName = editingClientName === c.cliente;
+    const pencilIcon = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
+    const checkIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    const xIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    const nameHtml = isEditingName
+      ? `<div class="name editing-name">
+           <input type="text" class="rename-input" value="${escapeAttr(dispName)}">
+           <button type="button" class="rename-save-btn" title="Guardar">${checkIcon}</button>
+           <button type="button" class="rename-cancel-btn" title="Cancelar">${xIcon}</button>
+         </div>`
+      : `<div class="name">${escapeHtml(dispName)}<button type="button" class="edit-name-btn" title="Editar nombre">${pencilIcon}</button><span class="email">${shownEmail || "sin email cargado"}</span>${descText ? `<span class="desc">${escapeHtml(descText)}</span>` : ''}${fiscalText}</div>`;
     head.innerHTML = `
       <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
-      <div class="name">${c.cliente}<span class="email">${shownEmail || "sin email cargado"}</span>${descText ? `<span class="desc">${escapeHtml(descText)}</span>` : ''}${fiscalText}</div>
+      ${nameHtml}
       ${newLabel}
       ${medioLabel}
       ${facturaLabel}
@@ -1446,6 +1518,48 @@ function render() {
         e.stopPropagation();
         copyText(copyCuitBtn.dataset.cuit, "CUIT copiado");
       });
+    }
+    if (isEditingName) {
+      const renameInput = head.querySelector(".rename-input");
+      const saveBtn = head.querySelector(".rename-save-btn");
+      const cancelBtn = head.querySelector(".rename-cancel-btn");
+      const doSave = () => {
+        const newVal = renameInput.value.trim();
+        if (newVal && newVal !== c.cliente) {
+          const taken = allClientes().some(other => other.cliente !== c.cliente && displayName(other).toLowerCase() === newVal.toLowerCase());
+          if (taken) { toast("Ya hay otro cliente con ese nombre.", true); return; }
+          nameOverrides[c.cliente] = {cliente: c.cliente, nuevo: newVal, fecha: new Date().toISOString()};
+          saveNameOverrides(nameOverrides);
+          fbWrite(`nameOverrides/${fbKey(c.cliente)}`, nameOverrides[c.cliente]);
+        } else if (!newVal || newVal === c.cliente) {
+          if (nameOverrides[c.cliente]) {
+            delete nameOverrides[c.cliente];
+            saveNameOverrides(nameOverrides);
+            fbRemove(`nameOverrides/${fbKey(c.cliente)}`);
+          }
+        }
+        editingClientName = null;
+        render();
+        toast("Nombre actualizado");
+      };
+      renameInput.addEventListener("click", e => e.stopPropagation());
+      renameInput.addEventListener("keydown", e => {
+        e.stopPropagation();
+        if (e.key === "Enter") { e.preventDefault(); doSave(); }
+        else if (e.key === "Escape") { e.preventDefault(); editingClientName = null; render(); }
+      });
+      saveBtn.addEventListener("click", e => { e.stopPropagation(); doSave(); });
+      cancelBtn.addEventListener("click", e => { e.stopPropagation(); editingClientName = null; render(); });
+      setTimeout(() => { renameInput.focus(); renameInput.select(); }, 0);
+    } else {
+      const editNameBtn = head.querySelector(".edit-name-btn");
+      if (editNameBtn) {
+        editNameBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          editingClientName = c.cliente;
+          render();
+        });
+      }
     }
     head.addEventListener("click", () => {
       if (unsavedHonorariosClient === c.cliente) {
@@ -1857,7 +1971,7 @@ function renderAddForm() {
   document.getElementById("nc-submit").addEventListener("click", () => {
     const nombre = document.getElementById("nc-nombre").value.trim();
     if (!nombre) { document.getElementById("nc-nombre").focus(); return; }
-    const exists = allClientes().some(c => c.cliente.toLowerCase() === nombre.toLowerCase());
+    const exists = allClientes().some(c => displayName(c).toLowerCase() === nombre.toLowerCase());
     if (exists) { alert("Ya existe un cliente con ese nombre."); return; }
     const nombreFinal = nombre.toUpperCase();
     const nuevoCliente = {
@@ -1979,7 +2093,7 @@ function buildReportRows() {
     const deuda = parseFloat(rec.deuda) || 0;
     const total = hasData ? (parseFloat(rec.monto) + deuda) : "";
     rows.push([
-      c.cliente,
+      displayName(c),
       hasData ? monthKeyDisplay(mk) : "",
       hasData ? money(rec.monto) : "",
       hasData && deuda ? money(deuda) : "",
@@ -1993,7 +2107,7 @@ function buildAnnualReportRows(year) {
   const headers = ["Clientes"].concat(MESES_NOMBRE);
   const rows = [headers];
   allClientes().forEach(c => {
-    const row = [c.cliente];
+    const row = [displayName(c)];
     for (let m = 1; m <= 12; m++) {
       const mk = `${year}-${pad2(m)}`;
       const rec = (state[mk] || {})[c.cliente];
@@ -2424,6 +2538,18 @@ function attachFbListeners() {
     });
     descriptions = newDesc;
     saveDescriptions(descriptions);
+    safeRerender();
+  });
+
+  fbDb.ref("nameOverrides").on("value", snap => {
+    const val = snap.val() || {};
+    const newOverrides = {};
+    Object.keys(val).forEach(k => {
+      const r = val[k];
+      if (r && r.cliente) newOverrides[r.cliente] = r;
+    });
+    nameOverrides = newOverrides;
+    saveNameOverrides(nameOverrides);
     safeRerender();
   });
 
