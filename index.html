@@ -1330,13 +1330,18 @@ function pendingChanges() {
     const ov = emailOverrides[c.cliente];
     if (ov && ov !== c.email) emailUpdates.push({cliente: c.cliente, email: ov});
   });
-  return {emailUpdates, nuevos: customClientes};
+  const renames = Object.values(nameOverrides).filter(r => r && !r.excelSynced);
+  return {emailUpdates, renames, nuevos: customClientes};
 }
 
 function pendingChangesText() {
-  const {emailUpdates, nuevos} = pendingChanges();
-  if (!emailUpdates.length && !nuevos.length) return "";
+  const {emailUpdates, renames, nuevos} = pendingChanges();
+  if (!emailUpdates.length && !renames.length && !nuevos.length) return "";
   let out = "CAMBIOS PARA CARGAR EN LA PLANILLA COBRANZAS MENSUALES.xlsx\n";
+  if (renames.length) {
+    out += "\nNOMBRES A ACTUALIZAR (columna A):\n";
+    renames.forEach(r => { out += `- ${r.cliente} → ${r.nuevo}\n`; });
+  }
   if (emailUpdates.length) {
     out += "\nEMAILS A ACTUALIZAR:\n";
     emailUpdates.forEach(u => { out += `- ${u.cliente}: ${u.email}\n`; });
@@ -1528,7 +1533,7 @@ function render() {
         if (newVal && newVal !== c.cliente) {
           const taken = allClientes().some(other => other.cliente !== c.cliente && displayName(other).toLowerCase() === newVal.toLowerCase());
           if (taken) { toast("Ya hay otro cliente con ese nombre.", true); return; }
-          nameOverrides[c.cliente] = {cliente: c.cliente, nuevo: newVal, fecha: new Date().toISOString()};
+          nameOverrides[c.cliente] = {cliente: c.cliente, nuevo: newVal, fecha: new Date().toISOString(), excelSynced: false};
           saveNameOverrides(nameOverrides);
           fbWrite(`nameOverrides/${fbKey(c.cliente)}`, nameOverrides[c.cliente]);
         } else if (!newVal || newVal === c.cliente) {
@@ -1540,6 +1545,8 @@ function render() {
         }
         editingClientName = null;
         render();
+        updateChangesBtn();
+        renderChangesPanel();
         toast("Nombre actualizado");
       };
       renameInput.addEventListener("click", e => e.stopPropagation());
@@ -2028,9 +2035,12 @@ function deleteCustomClient(name) {
 function renderChangesPanel() {
   const wrap = document.getElementById("changesWrap");
   if (!showChanges) { wrap.innerHTML = ""; return; }
-  const {emailUpdates, nuevos} = pendingChanges();
+  const {emailUpdates, renames, nuevos} = pendingChanges();
   const text = pendingChangesText();
   let rows = "";
+  renames.forEach(r => {
+    rows += `<div class="change-row"><div>✏️ <strong>${escapeHtml(r.cliente)}</strong> — nuevo nombre: ${escapeHtml(r.nuevo)}</div><button class="btn" data-rename-done="${escapeAttr(r.cliente)}">Ya actualizado</button></div>`;
+  });
   emailUpdates.forEach(u => {
     rows += `<div class="change-row"><div>📧 <strong>${u.cliente}</strong> — nuevo email: ${escapeHtml(u.email)}</div></div>`;
   });
@@ -2055,11 +2065,22 @@ function renderChangesPanel() {
   wrap.querySelectorAll("[data-del]").forEach(b => {
     b.addEventListener("click", () => deleteCustomClient(b.dataset.del));
   });
+  wrap.querySelectorAll("[data-rename-done]").forEach(b => {
+    b.addEventListener("click", () => {
+      const original = b.dataset.renameDone;
+      if (!nameOverrides[original]) return;
+      nameOverrides[original] = Object.assign({}, nameOverrides[original], {excelSynced: true});
+      saveNameOverrides(nameOverrides);
+      fbWrite(`nameOverrides/${fbKey(original)}`, nameOverrides[original]);
+      renderChangesPanel();
+      updateChangesBtn();
+    });
+  });
 }
 
 function updateChangesBtn() {
-  const {emailUpdates, nuevos} = pendingChanges();
-  const n = emailUpdates.length + nuevos.length;
+  const {emailUpdates, renames, nuevos} = pendingChanges();
+  const n = emailUpdates.length + renames.length + nuevos.length;
   document.getElementById("changesCount").textContent = n ? n : "";
 }
 
