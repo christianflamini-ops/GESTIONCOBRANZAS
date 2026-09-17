@@ -208,6 +208,31 @@
 
   .login-card .field { margin-bottom: 14px; }
 
+  .password-wrap {
+    position: relative;
+  }
+
+  .password-wrap input {
+    padding-right: 38px;
+  }
+
+  .toggle-password-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    padding: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  .toggle-password-btn:hover { color: var(--text); background: var(--surface-sunken); }
+
   .login-error {
     color: var(--danger);
     font-size: 12.5px;
@@ -1034,7 +1059,12 @@
     </div>
     <div class="field">
       <label for="loginPassword">Contraseña</label>
-      <input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••">
+      <div class="password-wrap">
+        <input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••">
+        <button type="button" class="toggle-password-btn" id="togglePassword" tabindex="-1" aria-label="Mostrar contraseña">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+      </div>
     </div>
     <button class="btn primary" id="loginSubmit" style="width:100%; justify-content:center;">Ingresar</button>
     <div class="login-error" id="loginError"></div>
@@ -1844,6 +1874,19 @@ function copyText(text, msg, fallbackEl) {
     try { document.execCommand("copy"); } catch (e) {}
     done();
   }
+}
+
+const eyeIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+const eyeOffIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+const togglePasswordBtn = document.getElementById("togglePassword");
+const loginPasswordInput = document.getElementById("loginPassword");
+if (togglePasswordBtn && loginPasswordInput) {
+  togglePasswordBtn.addEventListener("click", () => {
+    const willShow = loginPasswordInput.type === "password";
+    loginPasswordInput.type = willShow ? "text" : "password";
+    togglePasswordBtn.innerHTML = willShow ? eyeOffIcon : eyeIcon;
+    togglePasswordBtn.setAttribute("aria-label", willShow ? "Ocultar contraseña" : "Mostrar contraseña");
+  });
 }
 
 document.getElementById("search").addEventListener("input", (e) => {
@@ -2722,3 +2765,4 @@ if (fbHasAuth) {
   startApp();
 }
 </script>
+
